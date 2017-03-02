@@ -1,0 +1,8 @@
+{
+  "threshold": 2,
+  "voters": [
+    "770c2b310b95d210b5c5a1bb308dceae111f6101",
+    "cf48ae784f25c27de076a7cdb63218011a479451"
+  ],
+  "makers": ["8b017c8daa1d9763d64f96a95704f40f3c289b7e"]
+}
