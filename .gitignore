@@ -42,3 +42,8 @@ jspm_packages
 # Blockchain data files
 Blockchain/geth*
 Blockchain/keystore*
+
+# Constellation files
+Constellation/data
+Constellation/config.txt
+Constellation/node*
