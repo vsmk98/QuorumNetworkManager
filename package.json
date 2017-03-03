@@ -1,0 +1,22 @@
+{
+  "name": "basicquorum",
+  "version": "1.0.0",
+  "description": "1. Use this utility to generate quorum-genesis.json: https://github.com/davebryson/quorum-genesis",
+  "main": "deploySimpleStorage.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/coeniebeyers/BasicQuorum.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/coeniebeyers/BasicQuorum/issues"
+  },
+  "homepage": "https://github.com/coeniebeyers/BasicQuorum#readme",
+  "dependencies": {
+    "web3": "^0.18.2"
+  }
+}
