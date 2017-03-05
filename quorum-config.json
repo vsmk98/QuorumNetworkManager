@@ -1,5 +1,5 @@
 {
-  "threshold": 2,
+  "threshold": 1,
   "voters": [
     "0x432312e990945ad0e943113e559f86213ab0f909",
     "0xc7b82ee41862f0002865647a6e5f0c7bbdcf0332"
