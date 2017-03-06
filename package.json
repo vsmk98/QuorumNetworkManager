@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/coeniebeyers/BasicQuorum#readme",
   "dependencies": {
+    "prompt": "^1.0.0",
     "web3": "^0.18.2"
   }
 }
