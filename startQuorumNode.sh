@@ -7,9 +7,9 @@ BOOTNODE_ENODE=enode://6433e8fb82c4638a8a6d499d40eb7d8158883219600bfd49acb968e3a
 
 GLOBAL_ARGS="--bootnodes $BOOTNODE_ENODE --networkid $NETID --rpc --rpcaddr 0.0.0.0 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum"
 
-echo "[*] Starting Constellation nodes"
+echo "[*] Starting Constellation node"
 nohup constellation-node constellation.config 2>> constellation.log &
 sleep 5
 
-echo "[*] Starting node 3"
+echo "[*] Starting node"
 PRIVATE_CONFIG=constellation.config nohup geth --datadir Blockchain $GLOBAL_ARGS --rpcport 20010 --port 20000 2>> nohup.out &
