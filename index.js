@@ -216,7 +216,7 @@ function startQuorumNode(result, cb){
   });
 }
 
-function startNewNetwork(cb){
+function startNewQuorumNetwork(cb){
   console.log('[*] Starting new network...');
   
   // done - Create Blockchain and Constellation dirs
@@ -256,16 +256,92 @@ function startNewNetwork(cb){
   });
 }
 
+function clearCommunicationFolder(result, cb){
+  var cmd = 'rm -rf';
+  cmd += ' CommunicationNode';
+  var child = exec(cmd, function(){
+    cb(null, result);
+  });
+  child.stderr.on('data', function(error){
+    console.log('ERROR:', error);
+    cb(error, null);
+  });
+}
+
+function createCommunicationFolder(result, cb){
+  var cmd = 'mkdir';
+  cmd += ' CommunicationNode';
+  cmd += ' && mkdir';
+  cmd += ' CommunicationNode/geth';
+  var child = exec(cmd, function(){
+    cb(null, result);
+  });
+  child.stderr.on('data', function(error){
+    console.log('ERROR:', error);
+    cb(error, null);
+  });
+}
+
+function copyCommunicationNodeKey(result, cb){
+  var cmd = 'cp communicationNodeKey CommunicationNode/geth/nodekey';
+  var child = exec(cmd, function(){
+    cb(null, result);
+  });
+  child.stderr.on('data', function(error){
+    console.log('ERROR:', error);
+    cb(error, null);
+  });
+}
+
+function startCommunicationNode(result, cb){
+  var options = {encoding: 'utf8', timeout: 100*1000};
+  var cmd = './startCommunicationNode.sh';
+  var child = exec(cmd, options);
+  child.stdout.on('data', function(data){
+    cb(null, result);
+  });
+  child.stderr.on('data', function(error){
+    console.log('ERROR:', error);
+    cb(error, null);
+  });
+}
+
+function startCommunicationNetwork(cb){
+  console.log('[*] Starting communication network...');
+  
+  // Create communication node
+  // Copy nodekey - this nodekey will be static, across deployments
+  // Get ip address to use
+  // Start node
+  var newNetworkSetup = async.seq(
+    clearCommunicationFolder,
+    createCommunicationFolder,
+    copyCommunicationNodeKey,
+    getIpAddress,
+    startCommunicationNode
+  );
+
+  var result = {};
+  newNetworkSetup(result, function(err, res){
+    if (err) { return onErr(err); }
+    console.log('[*] New communication network started');
+    console.log('res:', res);
+    cb(err, res); 
+  });
+}
+
 function mainLoop(){
   prompt.start();
   console.log('Please select an option below:');
   console.log('1) Start new network');
   console.log('2) killall geth bootnode constellation-node');
-  console.log('3) Quit');
+  console.log('3) Start communication network');
+  console.log('4) Join communication network');
+  console.log('0) Quit');
   prompt.get(['option'], function (err, result) {
     if (err) { return onErr(err); }
     if(result.option == 1){
-      startNewNetwork(function(err, result){
+      startNewQuorumNetwork(function(err, result){
         if (err) { return onErr(err); }
         mainLoop();
       });
@@ -275,6 +351,11 @@ function mainLoop(){
         mainLoop();
       });      
     } else if(result.option == 3){
+      startCommunicationNetwork(function(err, result){
+        if (err) { return onErr(err); }
+        mainLoop();
+      });      
+    } else if(result.option == 0){
       console.log('Quiting');
       return;
     } else {
