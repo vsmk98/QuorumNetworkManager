@@ -3,6 +3,20 @@ var fs = require('fs');
 var async = require('async');
 var prompt = require('prompt');
 
+function killallGethBootnodeConstellationNode(cb){
+  var cmd = 'killall';
+  cmd += ' geth';
+  cmd += ' bootnode';
+  cmd += ' constellation-node';
+  var child = exec(cmd, function(){
+    cb(null, null);
+  });
+  child.stderr.on('data', function(error){
+    console.log('ERROR:', error);
+    cb(error, null);
+  });
+}
+
 function clearDirectories(result, cb){
   var cmd = 'rm -rf';
   cmd += ' Blockchain';
@@ -205,7 +219,7 @@ function startQuorumNode(result, cb){
 function startNewNetwork(cb){
   console.log('[*] Starting new network...');
   
-  // Create Blockchain and Constellation dirs
+  // done - Create Blockchain and Constellation dirs
   // done - Create constellation keys
   // Get ip address to use
   // Update constellation config with correct ip address
@@ -237,7 +251,8 @@ function startNewNetwork(cb){
   newNetworkSetup(result, function(err, res){
     if (err) { return onErr(err); }
     console.log('[*] New network started');
-    cb(res); 
+    console.log('res:', res);
+    cb(err, res); 
   });
 }
 
@@ -245,17 +260,20 @@ function mainLoop(){
   prompt.start();
   console.log('Please select an option below:');
   console.log('1) Start new network');
-  console.log('2) Join new network');
+  console.log('2) killall geth bootnode constellation-node');
   console.log('3) Quit');
   prompt.get(['option'], function (err, result) {
     if (err) { return onErr(err); }
     if(result.option == 1){
       startNewNetwork(function(err, result){
         if (err) { return onErr(err); }
-        console.log('newNetworkSetup res:', res);
         mainLoop();
       });
     } else if(result.option == 2){
+      killallGethBootnodeConstellationNode(function(err, result){
+        if (err) { return onErr(err); }
+        mainLoop();
+      });      
     } else if(result.option == 3){
       console.log('Quiting');
       return;
