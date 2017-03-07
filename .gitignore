@@ -54,3 +54,6 @@ Constellation2/data
 Constellation2/config.txt
 Constellation2/node*
 constellation2.config
+
+# CommunicationNode
+CommunicationNode/
