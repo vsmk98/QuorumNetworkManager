@@ -308,11 +308,6 @@ function startCommunicationNode(result, cb){
 
 function startCommunicationNetwork(cb){
   console.log('[*] Starting communication network...');
-  
-  // Create communication node
-  // Copy nodekey - this nodekey will be static, across deployments
-  // Get ip address to use
-  // Start node
   var newNetworkSetup = async.seq(
     clearCommunicationFolder,
     createCommunicationFolder,
@@ -322,6 +317,47 @@ function startCommunicationNetwork(cb){
   );
 
   var result = {};
+  newNetworkSetup(result, function(err, res){
+    if (err) { return onErr(err); }
+    console.log('[*] New communication network started');
+    console.log('res:', res);
+    cb(err, res); 
+  });
+}
+
+function createWeb3Connection(result, cb){
+  var Web3 = require('web3');
+  var fs = require('fs');
+  var web3 = new Web3();
+  web3.setProvider(new web3.providers.HttpProvider('http://localhost:40000'));
+  result.web3 = web3;
+}
+
+
+function connectToPeer(result, cb){
+  console.log('result:', result);
+  var enode = "enode://9443bd2c5ccc5978831088755491417fe0c3866537b5e9638bcb6ad34cb9bcc58a9338bb492590ff200a54b43a6a03e4a7e33fa111d0a7f6b7192d1ca050f300@192.168.88.238:40000";
+  result.web3.addPeer(enode, function(err, res){
+    if(err){console.log('ERROR:', err);}
+    console.log('res:', res);
+    cb(res);
+  });
+}
+
+function joinCommunicationNetwork(ipAddress, cb){
+  console.log('[*] Joining communication network...');
+  var newNetworkSetup = async.seq(
+    clearCommunicationFolder,
+    createCommunicationFolder,
+    startCommunicationNode,
+    createWeb3Connection,
+    connectToPeer
+  );
+
+  var result = {
+    "remoteIpAddress": ipAddress,
+    "remotePort": 40000
+  };
   newNetworkSetup(result, function(err, res){
     if (err) { return onErr(err); }
     console.log('[*] New communication network started');
@@ -354,6 +390,13 @@ function mainLoop(){
       startCommunicationNetwork(function(err, result){
         if (err) { return onErr(err); }
         mainLoop();
+      });      
+    } else if(result.option == 4){
+      prompt.get(['ipAddress'], function (err, network) {
+        joinCommunicationNetwork(network.apAddress, function(err, result){
+          if (err) { return onErr(err); }
+          mainLoop();
+        });      
       });      
     } else if(result.option == 0){
       console.log('Quiting');
