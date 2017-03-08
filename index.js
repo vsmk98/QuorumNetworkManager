@@ -2,6 +2,7 @@ var exec = require('child_process').exec;
 var fs = require('fs');
 var async = require('async');
 var prompt = require('prompt');
+var util = require('util.js');
 
 function killallGethBootnodeConstellationNode(cb){
   var cmd = 'killall';
@@ -19,10 +20,10 @@ function killallGethBootnodeConstellationNode(cb){
 
 function clearDirectories(result, cb){
   var cmd = 'rm -rf';
-  cmd += ' Blockchain';
-  cmd += ' Blockchain2';
-  cmd += ' Constellation';
-  cmd += ' Constellation2';
+  for(var i in result.folders){
+    var folder = result.folders[i];
+    cmd += ' '+folder;    
+  }
   var child = exec(cmd, function(){
     cb(null, result);
   });
@@ -34,10 +35,10 @@ function clearDirectories(result, cb){
 
 function createDirectories(result, cb){
   var cmd = 'mkdir';
-  cmd += ' Blockchain';
-  cmd += ' Blockchain2';
-  cmd += ' Constellation';
-  cmd += ' Constellation2';
+  for(var i in result.folders){
+    var folder = result.folders[i];
+    cmd += ' '+folder;    
+  }
   var child = exec(cmd, function(){
     cb(null, result);
   });
@@ -247,7 +248,9 @@ function startNewQuorumNetwork(cb){
     startQuorumNode
   );
 
-  var result = {};
+  var result = {
+    folders: ['Blockchain', 'Blockchain2', 'Constellation', 'Constellation2'] 
+  };
   newNetworkSetup(result, function(err, res){
     if (err) { return onErr(err); }
     console.log('[*] New network started');
@@ -306,29 +309,6 @@ function startCommunicationNode(result, cb){
   });
 }
 
-function addCommunicationHandler(result, cb){
-  
-}
-
-function startCommunicationNetwork(cb){
-  console.log('[*] Starting communication network...');
-  var newNetworkSetup = async.seq(
-    clearCommunicationFolder,
-    createCommunicationFolder,
-    copyCommunicationNodeKey,
-    getIpAddress,
-    startCommunicationNode,
-    addCommunicationHandler
-  );
-
-  var result = {};
-  newNetworkSetup(result, function(err, res){
-    if (err) { return onErr(err); }
-    console.log('[*] New communication network started');
-    cb(err, res); 
-  });
-}
-
 function createWeb3Connection(result, cb){
   // Web3 IPC
   var Web3IPC = require('web3_ipc');
@@ -349,7 +329,6 @@ function createWeb3Connection(result, cb){
   cb(null, result);
 }
 
-
 function connectToPeer(result, cb){
   console.log('Adding peer...');
   var enode = "enode://9443bd2c5ccc5978831088755491417fe0c3866537b5e9638bcb6ad34cb9bcc58a9338bb492590ff200a54b43a6a03e4a7e33fa111d0a7f6b7192d1ca050f300@192.168.88.238:40000";
@@ -361,6 +340,38 @@ function connectToPeer(result, cb){
   });
 }
 
+function addCommunicationHandler(result, cb){
+  result.web3RPC.shh.filter({"topics":["NewPeer"]}).watch(function(err, msg) {
+    if(err){console.log("ERROR:", err);};
+    var message = util.Hex2a(msg.payload);
+    console.log("New message on NewPeer:");
+    console.log(message);
+  });
+
+  cb(null, result);
+}
+
+function startCommunicationNetwork(cb){
+  console.log('[*] Starting communication network...');
+  var newNetworkSetup = async.seq(
+    clearCommunicationFolder,
+    createCommunicationFolder,
+    copyCommunicationNodeKey,
+    getIpAddress,
+    startCommunicationNode,
+    createWeb3Connection,
+    addCommunicationHandler
+  );
+
+  var result = {};
+  newNetworkSetup(result, function(err, res){
+    if (err) { return onErr(err); }
+    console.log('[*] New communication network started');
+    cb(err, res); 
+  });
+}
+
+
 function joinCommunicationNetwork(ipAddress, cb){
   console.log('[*] Joining communication network...');
   var newNetworkSetup = async.seq(
@@ -368,7 +379,8 @@ function joinCommunicationNetwork(ipAddress, cb){
     createCommunicationFolder,
     startCommunicationNode,
     createWeb3Connection,
-    connectToPeer
+    connectToPeer,
+    addCommunicationHandler
   );
 
   var result = {
@@ -382,38 +394,110 @@ function joinCommunicationNetwork(ipAddress, cb){
   });
 }
 
+function joinQuorumNetwork(cb){
+/*
+  console.log('[*] Starting new network...');
+  
+  // done - Create Blockchain and Constellation dirs
+  // done - Create constellation keys
+  // Get ip address to use
+  // Update constellation config with correct ip address
+  // done - Create two new geth accounts
+  // done - Create genesis block config with above two accounts, one BM + one BV
+  // done - Create quorum-genesis.json from above config
+  // done - Init genesis block from quorum-genesis.json
+  // Start boot node with correct ip address
+  // done - Start constellation node
+  // done - Start node
+  var newNetworkSetup = async.seq(
+    clearDirectories,
+    createDirectories,
+    createNewConstellationKeys, 
+    createNewConstellationArchiveKeys,
+    createNewConstellationKeys2, 
+    createNewConstellationArchiveKeys2,
+    getIpAddress,
+    updateConstellationConfig,
+    getNewGethAccount,
+    getNewGethAccount,
+    getNewGethAccount2,
+    createQuorumConfig,
+    createGenesisBlockConfig,
+    startQuorumNode
+  );
+
+  var result = {
+    folders: ['Blockchain', 'Constellation'] 
+  };
+  newNetworkSetup(result, function(err, res){
+    if (err) { return onErr(err); }
+    console.log('[*] New network started');
+    console.log('res:', res);
+    cb(err, res); 
+  });*/
+}
+
 function mainLoop(){
+  var quorumNetwork = null;
+  var communicationNetwork = null;
   prompt.start();
   console.log('Please select an option below:');
   console.log('1) Start new network');
   console.log('2) killall geth bootnode constellation-node');
   console.log('3) Start communication network');
   console.log('4) Join communication network');
+  console.log('5) Join Quorum network');
   console.log('0) Quit');
   prompt.get(['option'], function (err, result) {
     if (err) { return onErr(err); }
     if(result.option == 1){
       startNewQuorumNetwork(function(err, result){
         if (err) { return onErr(err); }
+        quorumNetwork = result;
         mainLoop();
       });
     } else if(result.option == 2){
       killallGethBootnodeConstellationNode(function(err, result){
         if (err) { return onErr(err); }
+        quorumNetwork = null;
+        communicationNetwork = null;
         mainLoop();
       });      
     } else if(result.option == 3){
-      startCommunicationNetwork(function(err, result){
-        if (err) { return onErr(err); }
-        mainLoop();
-      });      
-    } else if(result.option == 4){
-      prompt.get(['ipAddress'], function (err, network) {
-        joinCommunicationNetwork(network.ipAddress, function(err, result){
+      if(communicationNetwork == null){
+        startCommunicationNetwork(function(err, result){
           if (err) { return onErr(err); }
+          communicationNetwork = result;
+          mainLoop();
+        });  
+      } else {
+        console.log('Communication network already started');
+        mainLoop();
+      }   
+    } else if(result.option == 4){
+      if(communicationNetwork == null){ 
+        prompt.get(['ipAddress'], function (err, network) {
+          joinCommunicationNetwork(network.ipAddress, function(err, result){
+            if (err) { return onErr(err); }
+            communicationNetwork = result;
+            mainLoop();
+          });      
+        });  
+      } else {
+        console.log('Already joined a communication network');
+        mainLoop();
+      }    
+    } else if(result.option == 5){
+      if(communicationNetwork){ 
+        joinQuorumNetwork(communicationNetwork, function(err, result){
+          if (err) { return onErr(err); }
+          quorumNetwork = result;
           mainLoop();
         });      
-      });      
+      } else {
+        console.log('Please join a communication network first');
+        mainLoop();
+      }    
     } else if(result.option == 0){
       console.log('Quiting');
       return;
