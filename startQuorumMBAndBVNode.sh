@@ -5,7 +5,6 @@ set -e
 #echo "[*] Initialising genesis block"
 geth --datadir Blockchain init quorum-genesis.json &>> /dev/null
 geth --datadir Blockchain2 init quorum-genesis.json &>> /dev/null
-sleep 5
 
 NETID=91351
 BOOTNODE_KEYHEX=77bd02ffa26e3fb8f324bda24ae588066f1873d95680104de5bc2db9e7b2e510

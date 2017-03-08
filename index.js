@@ -203,12 +203,27 @@ function createGenesisBlockConfig(result, cb){
 
 function startQuorumNode(result, cb){
   var options = {encoding: 'utf8', timeout: 100*1000};
-  var cmd = './startQuorumNode.sh';
+  var cmd = './startQuorumBMAndBVNode.sh';
   cmd += ' '+result.addressList[1];
   cmd += ' '+result.addressList[0];
   cmd += ' '+result.addressList[2];
   var child = exec(cmd, options);
   child.stdout.on('data', function(data){
+    cb(null, result);
+  });
+  child.stderr.on('data', function(error){
+    console.log('ERROR:', error);
+    cb(error, null);
+  });
+}
+
+function startQuorumParticipantNode(result, cb){
+  console.log('Starting quorum participant node...');
+  var options = {encoding: 'utf8', timeout: 100*1000};
+  var cmd = './startQuorumParticipantNode.sh';
+  var child = exec(cmd, options);
+  child.stdout.on('data', function(data){
+    console.log('Started quorum participant node');
     cb(null, result);
   });
   child.stderr.on('data', function(error){
@@ -268,10 +283,12 @@ function startCommunicationNode(result, cb){
 }
 
 function createWeb3Connection(result, cb){
+  console.log('Creating web3 connections...');
   // Web3 IPC
+  var host = result.web3IPCHost;
   var Web3IPC = require('web3_ipc');
   var options = {
-    host: './CommunicationNode/geth.ipc',
+    host: host,
     ipc: true,
     personal: true,
     admin: true,
@@ -280,28 +297,30 @@ function createWeb3Connection(result, cb){
   var web3IPC = Web3IPC.create(options);
   result.web3IPC = web3IPC;
   // Web3 RPC
+  var httpProvider = result.web3RPCProvider;
   var Web3RPC = require('web3');
   var web3RPC = new Web3RPC();
-  web3RPC.setProvider(new web3RPC.providers.HttpProvider('http://localhost:40010'));
+  web3RPC.setProvider(new web3RPC.providers.HttpProvider(httpProvider));
   result.web3RPC = web3RPC;
+  console.log('Created web3 connections');
   cb(null, result);
 }
 
 function connectToPeer(result, cb){
   console.log('Adding peer...');
-  var enode = "enode://9443bd2c5ccc5978831088755491417fe0c3866537b5e9638bcb6ad34cb9bcc58a9338bb492590ff200a54b43a6a03e4a7e33fa111d0a7f6b7192d1ca050f300@192.168.88.238:40000";
+  var enode = result.enode;
   result.web3IPC.admin.addPeer(enode, function(err, res){
     console.log('Added peer');
     if(err){console.log('ERROR:', err);}
-    console.log('res:', res);
     cb(null, result);
   });
 }
 
 // TODO: Add check whether requester has correct permissions
 function addCommunicationHandler(result, cb){
-  var shh = result.web3RPC.shh;
-  shh.filter({"topics":["NewPeer"]}).watch(function(err, msg) {
+  var web3RPC = result.web3RPC;
+  var web3IPC = result.web3IPC;
+  web3RPC.shh.filter({"topics":["NewPeer"]}).watch(function(err, msg) {
     if(err){console.log("ERROR:", err);};
     var message = util.Hex2a(msg.payload);
     if(message.indexOf('request|genesisConfig') >= 0){
@@ -310,8 +329,29 @@ function addCommunicationHandler(result, cb){
         var genesisConfig = 'response|genesisConfig'+data;
         var hexString = new Buffer(genesisConfig).toString('hex');        
         console.log('Created hex string');
-        shh.post({
+        web3RPC.shh.post({
           "topics": ["NewPeer"],
+          "payload": hexString,
+          "ttl": 10,
+          "workToProve": 1
+        }, function(err, res){
+          if(err){console.log('err', err);}
+          console.log('Message sent:', res);
+        });
+      });
+    }
+  });
+
+  web3RPC.shh.filter({"topics":["Enode"]}).watch(function(err, msg) {
+    if(err){console.log("ERROR:", err);};
+    var message = util.Hex2a(msg.payload);
+    if(message.indexOf('request|enode') >= 0){
+      result.web3IPC.admin.nodeInfo(function(err, nodeInfo){
+        if(err){console.log('ERROR:', err);}
+        console.log('nodeInfo:', nodeInfo);
+        var hexString = new Buffer(nodeInfo.enode).toString('hex');        
+        web3RPC.shh.post({
+          "topics": ["Enode"],
           "payload": hexString,
           "ttl": 10,
           "workToProve": 1
@@ -358,6 +398,38 @@ function getGenesisBlockConfig(result, cb){
   });
 }
 
+// TODO: Add to and from fields to validate origins
+// TODO: Unsubscribe once enode has been received
+function getEnodeForQuorumNetwork(result, cb){
+  var shh = result.communicationNetwork.web3RPC.shh;
+  
+  var id = shh.newIdentity();
+  var str = "request|enode";
+  var hexString = new Buffer(str).toString('hex');
+
+  shh.post({
+    "from": id,
+    "topics": ["Enode"],
+    "payload": hexString,
+    "ttl": 10,
+    "workToProve": 1
+  }, function(err, res){
+    if(err){console.log('err', err);}
+    shh.filter({"topics":["Enode"]}).watch(function(err, msg) {
+      if(err){console.log("ERROR:", err);};
+      var message = util.Hex2a(msg.payload);
+      if(message.indexOf('response|enode') >= 0){
+        var enode = message.replace('response|enode', '').substring(1);
+        enode = enode.replace('\[\:\:\]', '192.168.88.238');
+        console.log('enode:', enode);
+        result.enode = enode;
+        cb(err, result);
+      }
+    });
+  });
+
+}
+
 function startCommunicationNetwork(cb){
   console.log('[*] Starting communication network...');
   var newNetworkSetup = async.seq(
@@ -370,7 +442,10 @@ function startCommunicationNetwork(cb){
     addCommunicationHandler
   );
 
-  var result = {};
+  var result = {
+    "web3IPCHost": './CommunicationNode/geth.ipc',
+    "web3RPCProvider": 'http://localhost:40010'
+  };
   newNetworkSetup(result, function(err, res){
     if (err) { return onErr(err); }
     console.log('[*] New communication network started');
@@ -390,7 +465,10 @@ function joinCommunicationNetwork(ipAddress, cb){
 
   var result = {
     "remoteIpAddress": ipAddress,
-    "remotePort": 40000
+    "remotePort": 40000,
+    "web3IPCHost": './CommunicationNode/geth.ipc',
+    "web3RPCProvider": 'http://localhost:40010',
+    "enode": "enode://9443bd2c5ccc5978831088755491417fe0c3866537b5e9638bcb6ad34cb9bcc58a9338bb492590ff200a54b43a6a03e4a7e33fa111d0a7f6b7192d1ca050f300@192.168.88.238:40000"
   };
   newNetworkSetup(result, function(err, res){
     if (err) { return onErr(err); }
@@ -440,18 +518,23 @@ function joinQuorumNetwork(communicationNetwork, cb){
     createNewConstellationArchiveKeys,
     getIpAddress,
     updateConstellationConfig,
-    getGenesisBlockConfig
-    //startQuorumNode
+    getGenesisBlockConfig,
+    startQuorumParticipantNode,
+    createWeb3Connection,
+    getEnodeForQuorumNetwork,
+    connectToPeer
   );
 
   var result = {
     folders: ['Blockchain', 'Constellation'],
-    communicationNetwork: communicationNetwork 
+    communicationNetwork: communicationNetwork,
+    "web3IPCHost": './Blockchain/geth.ipc',
+    "web3RPCProvider": 'http://localhost:20010'
+    //"enode": "enode://7203f2bd24e561307e88046ae95f7b29e3b7d9407660d27e6f6abc09210df8942e437cc42d41e5127b566d7f7389f9bfd6fe1c09a8170eac5d2af96ca7efa3ce@192.168.88.238:20000"
   };
   newNetworkSetup(result, function(err, res){
     if (err) { return onErr(err); }
     console.log('[*] New network started');
-    console.log('res:', res);
     cb(err, res); 
   });
 }
@@ -461,62 +544,47 @@ var communicationNetwork = null;
 function mainLoop(){
   prompt.start();
   console.log('Please select an option below:');
-  console.log('1) Start new network');
-  console.log('2) killall geth bootnode constellation-node');
-  console.log('3) Start communication network');
-  console.log('4) Join communication network');
-  console.log('5) Join Quorum network');
+  console.log('1) Start new Quorum network');
+  console.log('2) Join an existing Quorum network');
+  console.log('3) killall geth bootnode constellation-node');
   console.log('0) Quit');
   prompt.get(['option'], function (err, result) {
     if (err) { return onErr(err); }
     if(result.option == 1){
-      startNewQuorumNetwork(function(err, result){
+      startCommunicationNetwork(function(err, result){
         if (err) { return onErr(err); }
-        quorumNetwork = result;
-        mainLoop();
-      });
+        communicationNetwork = Object.assign({}, result);
+        result = null;
+        startNewQuorumNetwork(function(err, result){
+          if (err) { return onErr(err); }
+          quorumNetwork = Object.assign({}, result);
+          result = null;
+          mainLoop();
+        });
+      });  
     } else if(result.option == 2){
+      console.log('In order to join an existing network, '
+        + 'please enter the ip address of one of the managing nodes');
+      prompt.get(['ipAddress'], function (err, network) {
+        joinCommunicationNetwork(network.ipAddress, function(err, result){
+          if (err) { return onErr(err); }
+          communicationNetwork = Object.assign({}, result);
+          result = null;
+          joinQuorumNetwork(communicationNetwork, function(err, result){
+            if (err) { return onErr(err); }
+            quorumNetwork = Object.assign({}, result);
+            result = null;
+            mainLoop();
+          }); 
+        });      
+      });  
+    } else if(result.option == 3){
       killallGethBootnodeConstellationNode(function(err, result){
         if (err) { return onErr(err); }
         quorumNetwork = null;
         communicationNetwork = null;
         mainLoop();
       });      
-    } else if(result.option == 3){
-      if(communicationNetwork == null){
-        startCommunicationNetwork(function(err, result){
-          if (err) { return onErr(err); }
-          communicationNetwork = result;
-          mainLoop();
-        });  
-      } else {
-        console.log('Communication network already started');
-        mainLoop();
-      }   
-    } else if(result.option == 4){
-      if(communicationNetwork == null){ 
-        prompt.get(['ipAddress'], function (err, network) {
-          joinCommunicationNetwork(network.ipAddress, function(err, result){
-            if (err) { return onErr(err); }
-            communicationNetwork = result;
-            mainLoop();
-          });      
-        });  
-      } else {
-        console.log('Already joined a communication network');
-        mainLoop();
-      }    
-    } else if(result.option == 5){
-      if(communicationNetwork){ 
-        joinQuorumNetwork(communicationNetwork, function(err, result){
-          if (err) { return onErr(err); }
-          quorumNetwork = result;
-          mainLoop();
-        });      
-      } else {
-        console.log('Please join a communication network first');
-        mainLoop();
-      }    
     } else if(result.option == 0){
       console.log('Quiting');
       return;
