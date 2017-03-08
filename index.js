@@ -352,6 +352,7 @@ function addNewPeerCommunicationHandler(result, cb){
 
 // TODO: Add check whether requester has correct permissions
 function addEnodeCommunicationHandler(result, cb){
+  console.log('adding enode communication handler...');
   var web3RPC = result.web3RPC;
   var web3IPC = result.web3IPC;
   var commWeb3RPC = result.communicationNetwork.web3RPC;
@@ -377,6 +378,7 @@ function addEnodeCommunicationHandler(result, cb){
     }
   });
 
+  console.log('added enode communication handler');
   cb(null, result);
 }
 
