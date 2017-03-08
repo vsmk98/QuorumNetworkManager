@@ -34,4 +34,4 @@ Installation guide for https://github.com/davebryson/quorum-genesis
 
 1. `git clone git@github.com:davebryson/quorum-genesis.git`
 2. cd quorum-genesis
-3. npm install -g
+3. sudo npm install -g
