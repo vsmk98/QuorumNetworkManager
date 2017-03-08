@@ -203,7 +203,7 @@ function createGenesisBlockConfig(result, cb){
 
 function startQuorumNode(result, cb){
   var options = {encoding: 'utf8', timeout: 100*1000};
-  var cmd = './startQuorumNode.sh';
+  var cmd = './startQuorumBMAndBVNode.sh';
   cmd += ' '+result.addressList[1];
   cmd += ' '+result.addressList[0];
   cmd += ' '+result.addressList[2];
