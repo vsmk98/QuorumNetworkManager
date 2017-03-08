@@ -329,6 +329,7 @@ function addCommunicationHandler(result, cb){
 }
 
 // TODO: Add to and from fields to validate origins
+// TODO: Unsubscribe once genesisConfig has been received
 function getGenesisBlockConfig(result, cb){
   var shh = result.communicationNetwork.web3RPC.shh;
   
@@ -355,8 +356,6 @@ function getGenesisBlockConfig(result, cb){
         cb(null, result);
       }
     });
-
-    
   });
 }
 
@@ -443,8 +442,8 @@ function joinQuorumNetwork(communicationNetwork, cb){
     createNewConstellationArchiveKeys,
     getIpAddress,
     updateConstellationConfig,
-    getGenesisBlockConfig,
-    startQuorumNode
+    getGenesisBlockConfig
+    //startQuorumNode
   );
 
   var result = {
