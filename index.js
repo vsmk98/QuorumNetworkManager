@@ -320,27 +320,34 @@ function startCommunicationNetwork(cb){
   newNetworkSetup(result, function(err, res){
     if (err) { return onErr(err); }
     console.log('[*] New communication network started');
-    console.log('res:', res);
     cb(err, res); 
   });
 }
 
 function createWeb3Connection(result, cb){
-  var Web3 = require('web3');
-  var fs = require('fs');
-  var web3 = new Web3();
-  web3.setProvider(new web3.providers.HttpProvider('http://localhost:40000'));
-  result.web3 = web3;
+  console.log('createWeb3Connection');
+  var Web3 = require('web3_ipc');
+  var options = {
+    host: './CommunicationNode/geth.ipc',
+    ipc: true,
+    personal: true,
+    admin: true,
+    debug: false
+  };
+  var web3 = Web3.create(options);
+  result.adminWeb3 = web3;
+  cb(null, result);
 }
 
 
 function connectToPeer(result, cb){
-  console.log('result:', result);
+  console.log('Adding peer...');
   var enode = "enode://9443bd2c5ccc5978831088755491417fe0c3866537b5e9638bcb6ad34cb9bcc58a9338bb492590ff200a54b43a6a03e4a7e33fa111d0a7f6b7192d1ca050f300@192.168.88.238:40000";
-  result.web3.addPeer(enode, function(err, res){
+  result.adminWeb3.admin.addPeer(enode, function(err, res){
+    console.log('Added peer');
     if(err){console.log('ERROR:', err);}
     console.log('res:', res);
-    cb(res);
+    cb(null, res);
   });
 }
 
@@ -361,7 +368,6 @@ function joinCommunicationNetwork(ipAddress, cb){
   newNetworkSetup(result, function(err, res){
     if (err) { return onErr(err); }
     console.log('[*] New communication network started');
-    console.log('res:', res);
     cb(err, res); 
   });
 }
@@ -393,7 +399,7 @@ function mainLoop(){
       });      
     } else if(result.option == 4){
       prompt.get(['ipAddress'], function (err, network) {
-        joinCommunicationNetwork(network.apAddress, function(err, result){
+        joinCommunicationNetwork(network.ipAddress, function(err, result){
           if (err) { return onErr(err); }
           mainLoop();
         });      
