@@ -175,6 +175,7 @@ function getNewGethAccount2(result, cb){
 }
 
 function createQuorumConfig(result, cb){
+  console.log('creating genesis config...');
   var options = {encoding: 'utf8', timeout: 100*1000};
   var config = '{'
     +'"threshold": 1,'
@@ -186,13 +187,16 @@ function createQuorumConfig(result, cb){
   +'}';
 
   fs.writeFile('quorum-config.json', config, function(err, res){
+    console.log('created genesis config');
     cb(err, result);
   });
 }
 
 function createGenesisBlockConfig(result, cb){
+  console.log('creating genesis block config...');
   var options = {encoding: 'utf8', timeout: 100*1000};
   var child = exec('quorum-genesis', options, function(error, stderr, stdout){
+    console.log('created genesis block config');
     cb(null, result);
   });
   child.stderr.on('data', function(error){
@@ -203,7 +207,7 @@ function createGenesisBlockConfig(result, cb){
 
 function startQuorumNode(result, cb){
   var options = {encoding: 'utf8', timeout: 100*1000};
-  var cmd = './startQuorumBMAndBVNode.sh';
+  var cmd = './startQuorumBMAndBVNodes.sh';
   cmd += ' '+result.addressList[1];
   cmd += ' '+result.addressList[0];
   cmd += ' '+result.addressList[2];
@@ -317,7 +321,8 @@ function connectToPeer(result, cb){
 }
 
 // TODO: Add check whether requester has correct permissions
-function addCommunicationHandler(result, cb){
+// TODO: Rename topic to genesis config
+function addNewPeerCommunicationHandler(result, cb){
   var web3RPC = result.web3RPC;
   var web3IPC = result.web3IPC;
   web3RPC.shh.filter({"topics":["NewPeer"]}).watch(function(err, msg) {
@@ -336,28 +341,36 @@ function addCommunicationHandler(result, cb){
           "workToProve": 1
         }, function(err, res){
           if(err){console.log('err', err);}
-          console.log('Message sent:', res);
+          console.log('NewPeer message sent:', res);
         });
       });
     }
   });
+  cb(null, result);
+}
 
-  web3RPC.shh.filter({"topics":["Enode"]}).watch(function(err, msg) {
+// TODO: Add check whether requester has correct permissions
+function addEnodeCommunicationHandler(result, cb){
+  var web3RPC = result.web3RPC;
+  var web3IPC = result.web3IPC;
+  var commWeb3RPC = result.communicationNetwork.web3RPC;
+  var commWeb3IPC = result.communicationNetwork.web3IPC;
+  commWeb3RPC.shh.filter({"topics":["Enode"]}).watch(function(err, msg) {
     if(err){console.log("ERROR:", err);};
     var message = util.Hex2a(msg.payload);
     if(message.indexOf('request|enode') >= 0){
-      result.web3IPC.admin.nodeInfo(function(err, nodeInfo){
+      web3IPC.admin.nodeInfo(function(err, nodeInfo){
         if(err){console.log('ERROR:', err);}
-        console.log('nodeInfo:', nodeInfo);
-        var hexString = new Buffer(nodeInfo.enode).toString('hex');        
-        web3RPC.shh.post({
+        var enodeResponse = 'response|enode'+nodeInfo.enode;
+        var hexString = new Buffer(enodeResponse).toString('hex');        
+        commWeb3RPC.shh.post({
           "topics": ["Enode"],
           "payload": hexString,
           "ttl": 10,
           "workToProve": 1
         }, function(err, res){
           if(err){console.log('err', err);}
-          console.log('Message sent:', res);
+          console.log('Enode message sent:', res);
         });
       });
     }
@@ -427,7 +440,6 @@ function getEnodeForQuorumNetwork(result, cb){
       }
     });
   });
-
 }
 
 function startCommunicationNetwork(cb){
@@ -439,7 +451,7 @@ function startCommunicationNetwork(cb){
     getIpAddress,
     startCommunicationNode,
     createWeb3Connection,
-    addCommunicationHandler
+    addNewPeerCommunicationHandler    
   );
 
   var result = {
@@ -477,7 +489,7 @@ function joinCommunicationNetwork(ipAddress, cb){
   });
 }
 
-function startNewQuorumNetwork(cb){
+function startNewQuorumNetwork(communicationNetwork, cb){
   console.log('[*] Starting new network...');
   
   var newNetworkSetup = async.seq(
@@ -494,16 +506,20 @@ function startNewQuorumNetwork(cb){
     getNewGethAccount2,
     createQuorumConfig,
     createGenesisBlockConfig,
-    startQuorumNode
+    startQuorumNode,
+    createWeb3Connection,
+    addEnodeCommunicationHandler
   );
 
   var result = {
-    folders: ['Blockchain', 'Blockchain2', 'Constellation', 'Constellation2'] 
+    communicationNetwork: communicationNetwork,
+    folders: ['Blockchain', 'Blockchain2', 'Constellation', 'Constellation2'], 
+    "web3IPCHost": './Blockchain/geth.ipc',
+    "web3RPCProvider": 'http://localhost:20010',
   };
   newNetworkSetup(result, function(err, res){
     if (err) { return onErr(err); }
     console.log('[*] New network started');
-    console.log('res:', res);
     cb(err, res); 
   });
 }
@@ -555,7 +571,7 @@ function mainLoop(){
         if (err) { return onErr(err); }
         communicationNetwork = Object.assign({}, result);
         result = null;
-        startNewQuorumNetwork(function(err, result){
+        startNewQuorumNetwork(communicationNetwork, function(err, result){
           if (err) { return onErr(err); }
           quorumNetwork = Object.assign({}, result);
           result = null;
