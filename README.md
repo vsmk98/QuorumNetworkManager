@@ -23,7 +23,7 @@ Installation guide for https://github.com/jpmorganchase/constellation
 
 1. sudo apt-get install libdb-dev libsodium-dev zlib1g-dev libtinfo-dev unzip
 2. mkdir constellation
-3. cd consstellation
+3. cd constellation
 4. wget https://github.com/jpmorganchase/constellation/releases/download/v0.0.1-alpha/ubuntu1604.zip .
 5. unzip ubuntu1604.zip
 6. Add ubuntu1604 to your PATH: `echo "PATH=\$PATH:"$PWD/ubuntu1604 >> ~/.bashrc`
