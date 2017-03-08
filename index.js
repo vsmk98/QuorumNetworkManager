@@ -303,13 +303,9 @@ function addCommunicationHandler(result, cb){
   var shh = result.web3RPC.shh;
   shh.filter({"topics":["NewPeer"]}).watch(function(err, msg) {
     if(err){console.log("ERROR:", err);};
-    console.log('msg:', msg);
     var message = util.Hex2a(msg.payload);
-    console.log("New message on NewPeer:");
-    console.log(message);
-    if(message == 'request|genesisConfig'){
+    if(message.indexOf('request|genesisConfig') >= 0){
       fs.readFile('quorum-genesis.json', 'utf8', function(err, data){
-        console.log('Read file');
         if(err){console.log('ERROR:', err);}   
         var genesisConfig = 'response|genesisConfig'+JSON.stringify(data);
         var hexString = new Buffer(genesisConfig).toString('hex');        
@@ -347,13 +343,10 @@ function getGenesisBlockConfig(result, cb){
     "workToProve": 1
   }, function(err, res){
     if(err){console.log('err', err);}
-    console.log('Message sent:', res);
-
     shh.filter({"topics":["NewPeer"]}).watch(function(err, msg) {
       if(err){console.log("ERROR:", err);};
       var message = util.Hex2a(msg.payload);
       if(message.indexOf('response|genesisConfig') >= 0){
-        console.log('message:', message);
         result.genesisConfig = message;
         cb(null, result);
       }
