@@ -440,7 +440,7 @@ function joinQuorumNetwork(communicationNetwork, cb){
     createNewConstellationArchiveKeys,
     getIpAddress,
     updateConstellationConfig,
-    getGenesisBlockConfig
+    getGenesisBlockConfig,
     //startQuorumNode
   );
 
@@ -461,62 +461,47 @@ var communicationNetwork = null;
 function mainLoop(){
   prompt.start();
   console.log('Please select an option below:');
-  console.log('1) Start new network');
-  console.log('2) killall geth bootnode constellation-node');
-  console.log('3) Start communication network');
-  console.log('4) Join communication network');
-  console.log('5) Join Quorum network');
+  console.log('1) Start new Quorum network');
+  console.log('2) Join an existing Quorum network');
+  console.log('3) killall geth bootnode constellation-node');
   console.log('0) Quit');
   prompt.get(['option'], function (err, result) {
     if (err) { return onErr(err); }
     if(result.option == 1){
-      startNewQuorumNetwork(function(err, result){
+      startCommunicationNetwork(function(err, result){
         if (err) { return onErr(err); }
-        quorumNetwork = result;
-        mainLoop();
-      });
+        communicationNetwork = Object.assign({}, result);
+        result = null;
+        startNewQuorumNetwork(function(err, result){
+          if (err) { return onErr(err); }
+          quorumNetwork = Object.assign({}, result);
+          result = null;
+          mainLoop();
+        });
+      });  
     } else if(result.option == 2){
+      console.log('In order to join an existing network, '
+        + 'please and the ip address of one of the managing nodes');
+      prompt.get(['ipAddress'], function (err, network) {
+        joinCommunicationNetwork(network.ipAddress, function(err, result){
+          if (err) { return onErr(err); }
+          communicationNetwork = Object.assign({}, result);
+          result = null;
+          joinQuorumNetwork(communicationNetwork, function(err, result){
+            if (err) { return onErr(err); }
+            quorumNetwork = Object.assign({}, result);
+            result = null;
+            mainLoop();
+          }); 
+        });      
+      });  
+    } else if(result.option == 3){
       killallGethBootnodeConstellationNode(function(err, result){
         if (err) { return onErr(err); }
         quorumNetwork = null;
         communicationNetwork = null;
         mainLoop();
       });      
-    } else if(result.option == 3){
-      if(communicationNetwork == null){
-        startCommunicationNetwork(function(err, result){
-          if (err) { return onErr(err); }
-          communicationNetwork = result;
-          mainLoop();
-        });  
-      } else {
-        console.log('Communication network already started');
-        mainLoop();
-      }   
-    } else if(result.option == 4){
-      if(communicationNetwork == null){ 
-        prompt.get(['ipAddress'], function (err, network) {
-          joinCommunicationNetwork(network.ipAddress, function(err, result){
-            if (err) { return onErr(err); }
-            communicationNetwork = result;
-            mainLoop();
-          });      
-        });  
-      } else {
-        console.log('Already joined a communication network');
-        mainLoop();
-      }    
-    } else if(result.option == 5){
-      if(communicationNetwork){ 
-        joinQuorumNetwork(communicationNetwork, function(err, result){
-          if (err) { return onErr(err); }
-          quorumNetwork = result;
-          mainLoop();
-        });      
-      } else {
-        console.log('Please join a communication network first');
-        mainLoop();
-      }    
     } else if(result.option == 0){
       console.log('Quiting');
       return;
