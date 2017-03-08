@@ -347,8 +347,11 @@ function getGenesisBlockConfig(result, cb){
       if(err){console.log("ERROR:", err);};
       var message = util.Hex2a(msg.payload);
       if(message.indexOf('response|genesisConfig') >= 0){
-        result.genesisConfig = message;
-        cb(null, result);
+        var genesisConfig = JSON.parse(message.replace('response|genesisConfig'));
+        result.genesisConfig = genesisConfig;
+        fs.writeFile('quorum-genesis.json', genesisConfig, function(err, res){
+          cb(err, result);
+        });
       }
     });
   });
