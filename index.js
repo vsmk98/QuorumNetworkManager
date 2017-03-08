@@ -307,7 +307,7 @@ function addCommunicationHandler(result, cb){
     if(message.indexOf('request|genesisConfig') >= 0){
       fs.readFile('quorum-genesis.json', 'utf8', function(err, data){
         if(err){console.log('ERROR:', err);}   
-        var genesisConfig = 'response|genesisConfig'+JSON.stringify(data);
+        var genesisConfig = 'response|genesisConfig'+data;
         var hexString = new Buffer(genesisConfig).toString('hex');        
         console.log('Created hex string');
         shh.post({
