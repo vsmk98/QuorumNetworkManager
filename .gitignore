@@ -45,6 +45,8 @@ Blockchain/geth*
 Blockchain/keystore*
 Blockchain2/geth*
 Blockchain2/keystore*
+quorum-config.json
+quorum-genesis.json
 
 # Constellation files
 Constellation/data
