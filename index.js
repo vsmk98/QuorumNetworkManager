@@ -306,6 +306,10 @@ function startCommunicationNode(result, cb){
   });
 }
 
+function addCommunicationHandler(result, cb){
+  
+}
+
 function startCommunicationNetwork(cb){
   console.log('[*] Starting communication network...');
   var newNetworkSetup = async.seq(
@@ -313,7 +317,8 @@ function startCommunicationNetwork(cb){
     createCommunicationFolder,
     copyCommunicationNodeKey,
     getIpAddress,
-    startCommunicationNode
+    startCommunicationNode,
+    addCommunicationHandler
   );
 
   var result = {};
@@ -325,8 +330,8 @@ function startCommunicationNetwork(cb){
 }
 
 function createWeb3Connection(result, cb){
-  console.log('createWeb3Connection');
-  var Web3 = require('web3_ipc');
+  // Web3 IPC
+  var Web3IPC = require('web3_ipc');
   var options = {
     host: './CommunicationNode/geth.ipc',
     ipc: true,
@@ -334,8 +339,13 @@ function createWeb3Connection(result, cb){
     admin: true,
     debug: false
   };
-  var web3 = Web3.create(options);
-  result.adminWeb3 = web3;
+  var web3IPC = Web3IPC.create(options);
+  result.web3IPC = web3IPC;
+  // Web3 RPC
+  var Web3RPC = require('web3');
+  var web3RPC = new Web3RPC();
+  web3RPC.setProvider(new web3RPC.providers.HttpProvider('http://localhost:40010'));
+  result.web3RPC = web3RPC;
   cb(null, result);
 }
 
@@ -343,7 +353,7 @@ function createWeb3Connection(result, cb){
 function connectToPeer(result, cb){
   console.log('Adding peer...');
   var enode = "enode://9443bd2c5ccc5978831088755491417fe0c3866537b5e9638bcb6ad34cb9bcc58a9338bb492590ff200a54b43a6a03e4a7e33fa111d0a7f6b7192d1ca050f300@192.168.88.238:40000";
-  result.adminWeb3.admin.addPeer(enode, function(err, res){
+  result.web3IPC.admin.addPeer(enode, function(err, res){
     console.log('Added peer');
     if(err){console.log('ERROR:', err);}
     console.log('res:', res);
