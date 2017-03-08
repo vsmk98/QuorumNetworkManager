@@ -347,8 +347,9 @@ function getGenesisBlockConfig(result, cb){
       if(err){console.log("ERROR:", err);};
       var message = util.Hex2a(msg.payload);
       if(message.indexOf('response|genesisConfig') >= 0){
-        var genesisConfig = JSON.parse(message.replace('response|genesisConfig'));
-        result.genesisConfig = genesisConfig;
+        var genesisConfig = message.replace('response|genesisConfig', '').substring(1);
+        genesisConfig = genesisConfig.replace(/\\n/g, '');
+        genesisConfig = genesisConfig.replace(/\\/g, '');
         fs.writeFile('quorum-genesis.json', genesisConfig, function(err, res){
           cb(err, result);
         });
@@ -384,8 +385,7 @@ function joinCommunicationNetwork(ipAddress, cb){
     createCommunicationFolder,
     startCommunicationNode,
     createWeb3Connection,
-    connectToPeer,
-    addCommunicationHandler
+    connectToPeer
   );
 
   var result = {
