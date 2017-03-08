@@ -401,6 +401,7 @@ function getGenesisBlockConfig(result, cb){
 // TODO: Add to and from fields to validate origins
 // TODO: Unsubscribe once enode has been received
 function getEnodeForQuorumNetwork(result, cb){
+  console.log('requesting enode for quorum network...');
   var shh = result.communicationNetwork.web3RPC.shh;
   
   var id = shh.newIdentity();
@@ -417,6 +418,7 @@ function getEnodeForQuorumNetwork(result, cb){
     if(err){console.log('err', err);}
     shh.filter({"topics":["Enode"]}).watch(function(err, msg) {
       if(err){console.log("ERROR:", err);};
+      console.log('enode response received');
       var message = util.Hex2a(msg.payload);
       if(message.indexOf('response|enode') >= 0){
         var enode = message.replace('response|enode', '').substring(1);
