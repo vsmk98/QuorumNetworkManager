@@ -217,48 +217,6 @@ function startQuorumNode(result, cb){
   });
 }
 
-function startNewQuorumNetwork(cb){
-  console.log('[*] Starting new network...');
-  
-  // done - Create Blockchain and Constellation dirs
-  // done - Create constellation keys
-  // Get ip address to use
-  // Update constellation config with correct ip address
-  // done - Create two new geth accounts
-  // done - Create genesis block config with above two accounts, one BM + one BV
-  // done - Create quorum-genesis.json from above config
-  // done - Init genesis block from quorum-genesis.json
-  // Start boot node with correct ip address
-  // done - Start constellation node
-  // done - Start node
-  var newNetworkSetup = async.seq(
-    clearDirectories,
-    createDirectories,
-    createNewConstellationKeys, 
-    createNewConstellationArchiveKeys,
-    createNewConstellationKeys2, 
-    createNewConstellationArchiveKeys2,
-    getIpAddress,
-    updateConstellationConfig,
-    getNewGethAccount,
-    getNewGethAccount,
-    getNewGethAccount2,
-    createQuorumConfig,
-    createGenesisBlockConfig,
-    startQuorumNode
-  );
-
-  var result = {
-    folders: ['Blockchain', 'Blockchain2', 'Constellation', 'Constellation2'] 
-  };
-  newNetworkSetup(result, function(err, res){
-    if (err) { return onErr(err); }
-    console.log('[*] New network started');
-    console.log('res:', res);
-    cb(err, res); 
-  });
-}
-
 function clearCommunicationFolder(result, cb){
   var cmd = 'rm -rf';
   cmd += ' CommunicationNode';
@@ -340,15 +298,66 @@ function connectToPeer(result, cb){
   });
 }
 
+// TODO: Add check whether requester has correct permissions
 function addCommunicationHandler(result, cb){
-  result.web3RPC.shh.filter({"topics":["NewPeer"]}).watch(function(err, msg) {
+  var shh = result.web3RPC.shh;
+  shh.filter({"topics":["NewPeer"]}).watch(function(err, msg) {
     if(err){console.log("ERROR:", err);};
+    console.log('msg:', msg);
     var message = util.Hex2a(msg.payload);
     console.log("New message on NewPeer:");
     console.log(message);
+    if(message == 'request|genesisConfig'){
+      fs.readFile('quorum-genesis.json', 'utf8', function(err, data){
+        if(err){console.log('ERROR:', err);}   
+        var genesisConfig = 'response|genesisConfig'+JSON.stringify(data);
+        var hexString = new Buffer(genesisConfig).toString('hex');        
+        shh.post({
+          "topics": ["NewPeer"],
+          "payload": hexString,
+          "ttl": 10,
+          "workToProve": 1
+        }, function(err, res){
+          if(err){console.log('err', err);}
+          console.log('Message sent:', res);
+        });
+      });
+    }
   });
 
   cb(null, result);
+}
+
+// TODO: Add to and from fields to validate origins
+function getGenesisBlockConfig(result, cb){
+  var shh = result.communicationNetwork.web3RPC.shh;
+  
+  var id = shh.newIdentity();
+  var str = "request|genesisConfig";
+  var hexString = new Buffer(str).toString('hex');
+
+  shh.post({
+    "from": id,
+    "topics": ["NewPeer"],
+    "payload": hexString,
+    "ttl": 10,
+    "workToProve": 1
+  }, function(err, res){
+    if(err){console.log('err', err);}
+    console.log('Message sent:', res);
+
+    shh.filter({"topics":["NewPeer"]}).watch(function(err, msg) {
+      if(err){console.log("ERROR:", err);};
+      var message = util.Hex2a(msg.payload);
+      if(message.indexOf('response|genesisConfig') >= 0){
+        console.log('message:', message);
+        result.genesisConfig = message;
+        cb(null, result);
+      }
+    });
+
+    
+  });
 }
 
 function startCommunicationNetwork(cb){
@@ -370,7 +379,6 @@ function startCommunicationNetwork(cb){
     cb(err, res); 
   });
 }
-
 
 function joinCommunicationNetwork(ipAddress, cb){
   console.log('[*] Joining communication network...');
@@ -394,21 +402,9 @@ function joinCommunicationNetwork(ipAddress, cb){
   });
 }
 
-function joinQuorumNetwork(cb){
-/*
+function startNewQuorumNetwork(cb){
   console.log('[*] Starting new network...');
   
-  // done - Create Blockchain and Constellation dirs
-  // done - Create constellation keys
-  // Get ip address to use
-  // Update constellation config with correct ip address
-  // done - Create two new geth accounts
-  // done - Create genesis block config with above two accounts, one BM + one BV
-  // done - Create quorum-genesis.json from above config
-  // done - Init genesis block from quorum-genesis.json
-  // Start boot node with correct ip address
-  // done - Start constellation node
-  // done - Start node
   var newNetworkSetup = async.seq(
     clearDirectories,
     createDirectories,
@@ -427,14 +423,40 @@ function joinQuorumNetwork(cb){
   );
 
   var result = {
-    folders: ['Blockchain', 'Constellation'] 
+    folders: ['Blockchain', 'Blockchain2', 'Constellation', 'Constellation2'] 
   };
   newNetworkSetup(result, function(err, res){
     if (err) { return onErr(err); }
     console.log('[*] New network started');
     console.log('res:', res);
     cb(err, res); 
-  });*/
+  });
+}
+
+function joinQuorumNetwork(communicationNetwork, cb){
+  console.log('[*] Joining quorum network...');
+  
+  var newNetworkSetup = async.seq(
+    clearDirectories,
+    createDirectories,
+    createNewConstellationKeys, 
+    createNewConstellationArchiveKeys,
+    getIpAddress,
+    updateConstellationConfig,
+    getGenesisBlockConfig,
+    startQuorumNode
+  );
+
+  var result = {
+    folders: ['Blockchain', 'Constellation'],
+    communicationNetwork: communicationNetwork 
+  };
+  newNetworkSetup(result, function(err, res){
+    if (err) { return onErr(err); }
+    console.log('[*] New network started');
+    console.log('res:', res);
+    cb(err, res); 
+  });
 }
 
 function mainLoop(){
