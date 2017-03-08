@@ -318,8 +318,9 @@ function connectToPeer(result, cb){
 
 // TODO: Add check whether requester has correct permissions
 function addCommunicationHandler(result, cb){
-  var shh = result.web3RPC.shh;
-  shh.filter({"topics":["NewPeer"]}).watch(function(err, msg) {
+  var web3RPC = result.web3RPC;
+  var web3IPC = result.web3IPC;
+  web3RPC.shh.filter({"topics":["NewPeer"]}).watch(function(err, msg) {
     if(err){console.log("ERROR:", err);};
     var message = util.Hex2a(msg.payload);
     if(message.indexOf('request|genesisConfig') >= 0){
@@ -328,8 +329,29 @@ function addCommunicationHandler(result, cb){
         var genesisConfig = 'response|genesisConfig'+JSON.stringify(data);
         var hexString = new Buffer(genesisConfig).toString('hex');        
         console.log('Created hex string');
-        shh.post({
+        web3RPC.shh.post({
           "topics": ["NewPeer"],
+          "payload": hexString,
+          "ttl": 10,
+          "workToProve": 1
+        }, function(err, res){
+          if(err){console.log('err', err);}
+          console.log('Message sent:', res);
+        });
+      });
+    }
+  });
+
+  web3RPC.shh.filter({"topics":["Enode"]}).watch(function(err, msg) {
+    if(err){console.log("ERROR:", err);};
+    var message = util.Hex2a(msg.payload);
+    if(message.indexOf('request|enode') >= 0){
+      result.web3IPC.admin.nodeInfo(function(err, nodeInfo){
+        if(err){console.log('ERROR:', err);}
+        console.log('nodeInfo:', nodeInfo);
+        var hexString = new Buffer(nodeInfo.enode).toString('hex');        
+        web3RPC.shh.post({
+          "topics": ["Enode"],
           "payload": hexString,
           "ttl": 10,
           "workToProve": 1
@@ -374,6 +396,38 @@ function getGenesisBlockConfig(result, cb){
       }
     });
   });
+}
+
+// TODO: Add to and from fields to validate origins
+// TODO: Unsubscribe once enode has been received
+function getEnodeForQuorumNetwork(result, cb){
+  var shh = result.communicationNetwork.web3RPC.shh;
+  
+  var id = shh.newIdentity();
+  var str = "request|enode";
+  var hexString = new Buffer(str).toString('hex');
+
+  shh.post({
+    "from": id,
+    "topics": ["Enode"],
+    "payload": hexString,
+    "ttl": 10,
+    "workToProve": 1
+  }, function(err, res){
+    if(err){console.log('err', err);}
+    shh.filter({"topics":["Enode"]}).watch(function(err, msg) {
+      if(err){console.log("ERROR:", err);};
+      var message = util.Hex2a(msg.payload);
+      if(message.indexOf('response|enode') >= 0){
+        var enode = message.replace('response|enode', '').substring(1);
+        enode = enode.replace('\[\:\:\]', '192.168.88.238');
+        console.log('enode:', enode);
+        result.enode = enode;
+        cb(err, result);
+      }
+    });
+  });
+
 }
 
 function startCommunicationNetwork(cb){
@@ -467,6 +521,7 @@ function joinQuorumNetwork(communicationNetwork, cb){
     getGenesisBlockConfig,
     startQuorumParticipantNode,
     createWeb3Connection,
+    getEnodeForQuorumNetwork,
     connectToPeer
   );
 
@@ -474,8 +529,8 @@ function joinQuorumNetwork(communicationNetwork, cb){
     folders: ['Blockchain', 'Constellation'],
     communicationNetwork: communicationNetwork,
     "web3IPCHost": './Blockchain/geth.ipc',
-    "web3RPCProvider": 'http://localhost:20010',
-    "enode": "enode://7203f2bd24e561307e88046ae95f7b29e3b7d9407660d27e6f6abc09210df8942e437cc42d41e5127b566d7f7389f9bfd6fe1c09a8170eac5d2af96ca7efa3ce@192.168.88.238:20000"
+    "web3RPCProvider": 'http://localhost:20010'
+    //"enode": "enode://7203f2bd24e561307e88046ae95f7b29e3b7d9407660d27e6f6abc09210df8942e437cc42d41e5127b566d7f7389f9bfd6fe1c09a8170eac5d2af96ca7efa3ce@192.168.88.238:20000"
   };
   newNetworkSetup(result, function(err, res){
     if (err) { return onErr(err); }
