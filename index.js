@@ -2,7 +2,7 @@ var exec = require('child_process').exec;
 var fs = require('fs');
 var async = require('async');
 var prompt = require('prompt');
-var util = require('util.js');
+var util = require('./util.js');
 
 function killallGethBootnodeConstellationNode(cb){
   var cmd = 'killall';
@@ -294,7 +294,7 @@ function connectToPeer(result, cb){
     console.log('Added peer');
     if(err){console.log('ERROR:', err);}
     console.log('res:', res);
-    cb(null, res);
+    cb(null, result);
   });
 }
 
@@ -309,9 +309,11 @@ function addCommunicationHandler(result, cb){
     console.log(message);
     if(message == 'request|genesisConfig'){
       fs.readFile('quorum-genesis.json', 'utf8', function(err, data){
+        console.log('Read file');
         if(err){console.log('ERROR:', err);}   
         var genesisConfig = 'response|genesisConfig'+JSON.stringify(data);
         var hexString = new Buffer(genesisConfig).toString('hex');        
+        console.log('Created hex string');
         shh.post({
           "topics": ["NewPeer"],
           "payload": hexString,
@@ -458,9 +460,9 @@ function joinQuorumNetwork(communicationNetwork, cb){
   });
 }
 
+var quorumNetwork = null;
+var communicationNetwork = null;
 function mainLoop(){
-  var quorumNetwork = null;
-  var communicationNetwork = null;
   prompt.start();
   console.log('Please select an option below:');
   console.log('1) Start new network');
