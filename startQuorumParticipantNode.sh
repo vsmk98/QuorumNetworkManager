@@ -13,3 +13,5 @@ sleep 5
 
 PRIVATE_CONFIG=constellation.config nohup geth --datadir Blockchain $GLOBAL_ARGS --rpcport 20010 --port 20000 &> gethNode.log &
 sleep 5
+
+echo "[*] Node started"

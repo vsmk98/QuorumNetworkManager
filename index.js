@@ -217,6 +217,21 @@ function startQuorumNode(result, cb){
   });
 }
 
+function startQuorumParticipantNode(result, cb){
+  console.log('Starting quorum participant node...');
+  var options = {encoding: 'utf8', timeout: 100*1000};
+  var cmd = './startQuorumParticipantNode.sh';
+  var child = exec(cmd, options);
+  child.stdout.on('data', function(data){
+    console.log('Started quorum participant node');
+    cb(null, result);
+  });
+  child.stderr.on('data', function(error){
+    console.log('ERROR:', error);
+    cb(error, null);
+  });
+}
+
 function clearCommunicationFolder(result, cb){
   var cmd = 'rm -rf';
   cmd += ' CommunicationNode';
@@ -268,10 +283,12 @@ function startCommunicationNode(result, cb){
 }
 
 function createWeb3Connection(result, cb){
+  console.log('Creating web3 connections...');
   // Web3 IPC
+  var host = result.web3IPCHost;
   var Web3IPC = require('web3_ipc');
   var options = {
-    host: './CommunicationNode/geth.ipc',
+    host: host,
     ipc: true,
     personal: true,
     admin: true,
@@ -280,20 +297,21 @@ function createWeb3Connection(result, cb){
   var web3IPC = Web3IPC.create(options);
   result.web3IPC = web3IPC;
   // Web3 RPC
+  var httpProvider = result.web3RPCProvider;
   var Web3RPC = require('web3');
   var web3RPC = new Web3RPC();
-  web3RPC.setProvider(new web3RPC.providers.HttpProvider('http://localhost:40010'));
+  web3RPC.setProvider(new web3RPC.providers.HttpProvider(httpProvider));
   result.web3RPC = web3RPC;
+  console.log('Created web3 connections');
   cb(null, result);
 }
 
 function connectToPeer(result, cb){
   console.log('Adding peer...');
-  var enode = "enode://9443bd2c5ccc5978831088755491417fe0c3866537b5e9638bcb6ad34cb9bcc58a9338bb492590ff200a54b43a6a03e4a7e33fa111d0a7f6b7192d1ca050f300@192.168.88.238:40000";
+  var enode = result.enode;
   result.web3IPC.admin.addPeer(enode, function(err, res){
     console.log('Added peer');
     if(err){console.log('ERROR:', err);}
-    console.log('res:', res);
     cb(null, result);
   });
 }
@@ -370,7 +388,10 @@ function startCommunicationNetwork(cb){
     addCommunicationHandler
   );
 
-  var result = {};
+  var result = {
+    "web3IPCHost": './CommunicationNode/geth.ipc',
+    "web3RPCProvider": 'http://localhost:40010'
+  };
   newNetworkSetup(result, function(err, res){
     if (err) { return onErr(err); }
     console.log('[*] New communication network started');
@@ -390,7 +411,10 @@ function joinCommunicationNetwork(ipAddress, cb){
 
   var result = {
     "remoteIpAddress": ipAddress,
-    "remotePort": 40000
+    "remotePort": 40000,
+    "web3IPCHost": './CommunicationNode/geth.ipc',
+    "web3RPCProvider": 'http://localhost:40010',
+    "enode": "enode://9443bd2c5ccc5978831088755491417fe0c3866537b5e9638bcb6ad34cb9bcc58a9338bb492590ff200a54b43a6a03e4a7e33fa111d0a7f6b7192d1ca050f300@192.168.88.238:40000"
   };
   newNetworkSetup(result, function(err, res){
     if (err) { return onErr(err); }
@@ -441,17 +465,21 @@ function joinQuorumNetwork(communicationNetwork, cb){
     getIpAddress,
     updateConstellationConfig,
     getGenesisBlockConfig,
-    //startQuorumNode
+    startQuorumParticipantNode,
+    createWeb3Connection,
+    connectToPeer
   );
 
   var result = {
     folders: ['Blockchain', 'Constellation'],
-    communicationNetwork: communicationNetwork 
+    communicationNetwork: communicationNetwork,
+    "web3IPCHost": './Blockchain/geth.ipc',
+    "web3RPCProvider": 'http://localhost:20010',
+    "enode": "enode://7203f2bd24e561307e88046ae95f7b29e3b7d9407660d27e6f6abc09210df8942e437cc42d41e5127b566d7f7389f9bfd6fe1c09a8170eac5d2af96ca7efa3ce@192.168.88.238:20000"
   };
   newNetworkSetup(result, function(err, res){
     if (err) { return onErr(err); }
     console.log('[*] New network started');
-    console.log('res:', res);
     cb(err, res); 
   });
 }
@@ -481,7 +509,7 @@ function mainLoop(){
       });  
     } else if(result.option == 2){
       console.log('In order to join an existing network, '
-        + 'please and the ip address of one of the managing nodes');
+        + 'please enter the ip address of one of the managing nodes');
       prompt.get(['ipAddress'], function (err, network) {
         joinCommunicationNetwork(network.ipAddress, function(err, result){
           if (err) { return onErr(err); }
