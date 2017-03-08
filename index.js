@@ -116,8 +116,9 @@ function createNewConstellationArchiveKeys2(result, cb){
   });
 }
 
+// TODO: This should get this node's IP address
 function getIpAddress(result, cb){
-  var ipAddress = "192.168.88.238";
+  var ipAddress = "localhost";
   result.ipAddress = ipAddress;
   cb(null, result);
 }
@@ -415,7 +416,8 @@ function getGenesisBlockConfig(result, cb){
 // TODO: Unsubscribe once enode has been received
 function getEnodeForQuorumNetwork(result, cb){
   console.log('requesting enode for quorum network...');
-  var shh = result.communicationNetwork.web3RPC.shh;
+  var comm = result.communicationNetwork;
+  var shh = comm.web3RPC.shh;
   
   var id = shh.newIdentity();
   var str = "request|enode";
@@ -435,7 +437,7 @@ function getEnodeForQuorumNetwork(result, cb){
       var message = util.Hex2a(msg.payload);
       if(message.indexOf('response|enode') >= 0){
         var enode = message.replace('response|enode', '').substring(1);
-        enode = enode.replace('\[\:\:\]', '192.168.88.238');
+        enode = enode.replace('\[\:\:\]', comm.managingNodeIpAddress);
         console.log('enode:', enode);
         result.enode = enode;
         cb(err, result);
@@ -478,11 +480,10 @@ function joinCommunicationNetwork(ipAddress, cb){
   );
 
   var result = {
-    "remoteIpAddress": ipAddress,
-    "remotePort": 40000,
+    "managingNodeIpAddress": ipAddress,
     "web3IPCHost": './CommunicationNode/geth.ipc',
     "web3RPCProvider": 'http://localhost:40010',
-    "enode": "enode://9443bd2c5ccc5978831088755491417fe0c3866537b5e9638bcb6ad34cb9bcc58a9338bb492590ff200a54b43a6a03e4a7e33fa111d0a7f6b7192d1ca050f300@192.168.88.238:40000"
+    "enode": "enode://9443bd2c5ccc5978831088755491417fe0c3866537b5e9638bcb6ad34cb9bcc58a9338bb492590ff200a54b43a6a03e4a7e33fa111d0a7f6b7192d1ca050f300@"+ipAddress+":40000"
   };
   newNetworkSetup(result, function(err, res){
     if (err) { return onErr(err); }
@@ -527,7 +528,7 @@ function startNewQuorumNetwork(communicationNetwork, cb){
 }
 
 function joinQuorumNetwork(communicationNetwork, cb){
-  console.log('[*] Joining quorum network...');
+  console.log('[*] Joining existing quorum network...');
   
   var newNetworkSetup = async.seq(
     clearDirectories,
@@ -548,7 +549,6 @@ function joinQuorumNetwork(communicationNetwork, cb){
     communicationNetwork: communicationNetwork,
     "web3IPCHost": './Blockchain/geth.ipc',
     "web3RPCProvider": 'http://localhost:20010'
-    //"enode": "enode://7203f2bd24e561307e88046ae95f7b29e3b7d9407660d27e6f6abc09210df8942e437cc42d41e5127b566d7f7389f9bfd6fe1c09a8170eac5d2af96ca7efa3ce@192.168.88.238:20000"
   };
   newNetworkSetup(result, function(err, res){
     if (err) { return onErr(err); }
