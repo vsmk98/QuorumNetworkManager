@@ -6,7 +6,7 @@ This project aims to make creating Quorum networks easy.
 
 1. go 1.7.3/4 (this has to do with go-ethereum not working with go 1.8)
 2. Ubuntu 16.04 (this has to do with Constellation)
-3. NodeJS v4.5+ (tested on v4.8.0)
+3. NodeJS v4.5+ (tested on v4.8.0) (https://nodejs.org/en/download/package-manager/)
 
 ## Installing Quorum
 
