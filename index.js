@@ -231,6 +231,8 @@ function startQuorumNode(result, cb){
   cmd += ' '+result.addressList[1];
   cmd += ' '+result.addressList[0];
   cmd += ' '+result.addressList[2];
+  cmd += ' '+localIpAddress;
+  console.log('cmd', cmd);
   var child = exec(cmd, options);
   child.stdout.on('data', function(data){
     cb(null, result);
