@@ -10,7 +10,7 @@ This project aims to make creating Quorum networks easy.
 
 ## Installing Ethereum
 
-NOTE1: This project makes use of bootnode for now, hence we need to install the below
+NOTE1: This project makes use of bootnode for now, hence we need to install the below  
 NOTE2: We will need to use Quorum's geth, so do a `sudo /usr/bin/geth /usr/bin/normalGeth`
 
 1. `sudo apt-get install software-properties-common`
