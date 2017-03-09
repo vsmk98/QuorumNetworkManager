@@ -116,18 +116,11 @@ function createNewConstellationArchiveKeys2(result, cb){
   });
 }
 
-// TODO: This should get this node's IP address
-function getIpAddress(result, cb){
-  var ipAddress = "localhost";
-  result.ipAddress = ipAddress;
-  cb(null, result);
-}
-
 function createConstellationConfig(result, cb){
-  var config = 'url = "http://localhost:9000/"\n';
+  var config = 'url = "http://'+localIpAddress+':9000/"\n';
   config += 'port = 9000\n';
   config += 'socketPath = "Constellation/socket.ipc"\n';
-  config += 'otherNodeUrls = ["http://localhost:9001/"]\n';
+  config += 'otherNodeUrls = ["http://'+localIpAddress+':9001/"]\n';
   config += 'publicKeyPath = "Constellation/node.pub"\n';
   config += 'privateKeyPath = "Constellation/node.key"\n';
   config += 'archivalPublicKeyPath = "Constellation/nodeArch.pub"\n';
@@ -139,10 +132,10 @@ function createConstellationConfig(result, cb){
 }
 
 function createConstellation2Config(result, cb){
-  var config = 'url = "http://localhost:9001/"\n';
+  var config = 'url = "http://'+localIpAddress+':9001/"\n';
   config += 'port = 9001\n';
   config += 'socketPath = "Constellation2/socket.ipc"\n';
-  config += 'otherNodeUrls = ["http://localhost:9000/"]\n';
+  config += 'otherNodeUrls = ["http://'+localIpAddress+':9000/"]\n';
   config += 'publicKeyPath = "Constellation2/node.pub"\n';
   config += 'privateKeyPath = "Constellation2/node.key"\n';
   config += 'archivalPublicKeyPath = "Constellation2/nodeArch.pub"\n';
@@ -480,7 +473,6 @@ function startCommunicationNetwork(cb){
     clearCommunicationFolder,
     createCommunicationFolder,
     copyCommunicationNodeKey,
-    getIpAddress,
     startCommunicationNode,
     createWeb3Connection,
     addNewPeerCommunicationHandler    
@@ -530,7 +522,6 @@ function startNewQuorumNetwork(communicationNetwork, cb){
     createNewConstellationArchiveKeys,
     createNewConstellationKeys2, 
     createNewConstellationArchiveKeys2,
-    getIpAddress,
     createConstellationConfig,
     createConstellation2Config,
     getNewGethAccount,
@@ -564,7 +555,6 @@ function joinQuorumNetwork(communicationNetwork, cb){
     createDirectories,
     createNewConstellationKeys, 
     createNewConstellationArchiveKeys,
-    getIpAddress,
     createConstellationConfig,
     getGenesisBlockConfig,
     startQuorumParticipantNode,
@@ -588,57 +578,67 @@ function joinQuorumNetwork(communicationNetwork, cb){
 
 var quorumNetwork = null;
 var communicationNetwork = null;
+var localIpAddress = null;
 function mainLoop(){
   prompt.start();
-  console.log('Please select an option below:');
-  console.log('1) Start new Quorum network');
-  console.log('2) Join an existing Quorum network');
-  console.log('3) killall geth bootnode constellation-node');
-  console.log('0) Quit');
-  prompt.get(['option'], function (err, result) {
-    if (err) { return onErr(err); }
-    if(result.option == 1){
-      startCommunicationNetwork(function(err, result){
-        if (err) { return onErr(err); }
-        communicationNetwork = Object.assign({}, result);
-        result = null;
-        startNewQuorumNetwork(communicationNetwork, function(err, result){
-          if (err) { return onErr(err); }
-          quorumNetwork = Object.assign({}, result);
-          result = null;
-          mainLoop();
-        });
-      });  
-    } else if(result.option == 2){
-      console.log('In order to join an existing network, '
-        + 'please enter the ip address of one of the managing nodes');
-      prompt.get(['ipAddress'], function (err, network) {
-        joinCommunicationNetwork(network.ipAddress, function(err, result){
+  if(localIpAddress){
+    console.log('Please select an option below:');
+    console.log('1) Start new Quorum network');
+    console.log('2) Join an existing Quorum network');
+    console.log('3) killall geth bootnode constellation-node');
+    console.log('0) Quit');
+    prompt.get(['option'], function (err, result) {
+      if (err) { return onErr(err); }
+      if(result.option == 1){
+        startCommunicationNetwork(function(err, result){
           if (err) { return onErr(err); }
           communicationNetwork = Object.assign({}, result);
           result = null;
-          joinQuorumNetwork(communicationNetwork, function(err, result){
+          startNewQuorumNetwork(communicationNetwork, function(err, result){
             if (err) { return onErr(err); }
             quorumNetwork = Object.assign({}, result);
             result = null;
             mainLoop();
-          }); 
+          });
+        });  
+      } else if(result.option == 2){
+        console.log('In order to join an existing network, '
+          + 'please enter the ip address of one of the managing nodes');
+        prompt.get(['ipAddress'], function (err, network) {
+          joinCommunicationNetwork(network.ipAddress, function(err, result){
+            if (err) { return onErr(err); }
+            communicationNetwork = Object.assign({}, result);
+            result = null;
+            joinQuorumNetwork(communicationNetwork, function(err, result){
+              if (err) { return onErr(err); }
+              quorumNetwork = Object.assign({}, result);
+              result = null;
+              mainLoop();
+            }); 
+          });      
+        });  
+      } else if(result.option == 3){
+        killallGethBootnodeConstellationNode(function(err, result){
+          if (err) { return onErr(err); }
+          quorumNetwork = null;
+          communicationNetwork = null;
+          mainLoop();
         });      
-      });  
-    } else if(result.option == 3){
-      killallGethBootnodeConstellationNode(function(err, result){
-        if (err) { return onErr(err); }
-        quorumNetwork = null;
-        communicationNetwork = null;
+      } else if(result.option == 0){
+        console.log('Quiting');
+        return;
+      } else {
         mainLoop();
-      });      
-    } else if(result.option == 0){
-      console.log('Quiting');
-      return;
-    } else {
+      }
+    });
+  } else {
+    console.log('Welcome! Before we get started, please enter the IP address '
+      +'other nodes will use to connect to this node.');
+    prompt.get(['localIpAddress'], function (err, answer) {
+      localIpAddress = answer.localIpAddress;
       mainLoop();
-    }
-  });
+    });
+  }
 }
 
 function onErr(err) {
