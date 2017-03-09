@@ -57,7 +57,6 @@ function createNewConstellationKeys(result, cb){
     cmd += 'cd '+folderName+' && constellation-enclave-keygen '+fileName+' && cd .. && '; 
   }
   cmd = cmd.substring(0, cmd.length-4);
-  console.log('cmd:', cmd);
   var child = exec(cmd);
   child.stdout.on('data', function(data){
     if(data.indexOf('Lock key pair') >= 0){
