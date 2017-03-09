@@ -49,8 +49,10 @@ quorum-config.json
 quorum-genesis.json
 
 # Constellation files
+constellation.config
 Constellation/data
 Constellation/node*
+constellation2.config
 Constellation2/data
 Constellation2/node*
 
