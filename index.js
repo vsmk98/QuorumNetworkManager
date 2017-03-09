@@ -49,11 +49,11 @@ function createDirectories(result, cb){
 }
 
 function createNewConstellationKeys(result, cb){
-  var counter = result.constellationSetup.length;
+  var counter = result.constellationKeySetup.length;
   var cmd = "";
-  for(var i in result.constellationSetup){
-    var folderName = result.constellationSetup[i].folderName;
-    var fileName = result.constellationSetup[i].fileName;
+  for(var i in result.constellationKeySetup){
+    var folderName = result.constellationKeySetup[i].folderName;
+    var fileName = result.constellationKeySetup[i].fileName;
     cmd += 'cd '+folderName+' && constellation-enclave-keygen '+fileName+' && cd .. && '; 
   }
   cmd = cmd.substring(0, cmd.length-4);
@@ -78,31 +78,17 @@ function createNewConstellationKeys(result, cb){
 }
 
 function createConstellationConfig(result, cb){
-  var config = 'url = "http://'+localIpAddress+':9000/"\n';
-  config += 'port = 9000\n';
-  config += 'socketPath = "Constellation/socket.ipc"\n';
-  config += 'otherNodeUrls = ["http://'+localIpAddress+':9001/"]\n';
-  config += 'publicKeyPath = "Constellation/node.pub"\n';
-  config += 'privateKeyPath = "Constellation/node.key"\n';
-  config += 'archivalPublicKeyPath = "Constellation/nodeArch.pub"\n';
-  config += 'archivalPrivateKeyPath = "Constellation/nodeArch.key"\n';
-  config += 'storagePath = "Constellation/data"';
-  fs.writeFile('constellation.config', config, function(err, res){
-    cb(err, result);
-  });
-}
-
-function createConstellation2Config(result, cb){
-  var config = 'url = "http://'+localIpAddress+':9001/"\n';
-  config += 'port = 9001\n';
-  config += 'socketPath = "Constellation2/socket.ipc"\n';
-  config += 'otherNodeUrls = ["http://'+localIpAddress+':9000/"]\n';
-  config += 'publicKeyPath = "Constellation2/node.pub"\n';
-  config += 'privateKeyPath = "Constellation2/node.key"\n';
-  config += 'archivalPublicKeyPath = "Constellation2/nodeArch.pub"\n';
-  config += 'archivalPrivateKeyPath = "Constellation2/nodeArch.key"\n';
-  config += 'storagePath = "Constellation2/data"';
-  fs.writeFile('constellation2.config', config, function(err, res){
+  var c = result.constellationConfigSetup;
+  var config = 'url = "http://'+c.localIpAddress+':'+c.localPort+'/"\n';
+  config += 'port = '+c.localPort+'\n';
+  config += 'socketPath = "'+c.folderName+'/socket.ipc"\n';
+  config += 'otherNodeUrls = ["http://'+c.remoteIpAddress+':'+c.remotePort+'/"]\n';
+  config += 'publicKeyPath = "'+c.folderName+'/'+c.publicKeyFileName+'"\n';
+  config += 'privateKeyPath = "'+c.folderName+'/'+c.privateKeyFileName+'"\n';
+  config += 'archivalPublicKeyPath = "'+c.folderName+'/'+c.publicArchKeyFileName+'"\n';
+  config += 'archivalPrivateKeyPath = "'+c.folderName+'/'+c.privateArchKeyFileName+'"\n';
+  config += 'storagePath = "'+c.folderName+'/data"';
+  fs.writeFile(c.configName, config, function(err, res){
     cb(err, result);
   });
 }
@@ -161,8 +147,7 @@ function createQuorumConfig(result, cb){
   var config = '{'
     +'"threshold": 1,'
     +'"voters": ['
-    + '"'+result.addressList[1]+'",'
-    + '"'+result.addressList[2]+'"'
+    + '"'+result.addressList[1]+'"'
     +'],'
     +'"makers": ["'+result.addressList[0]+'"]'
   +'}';
@@ -451,7 +436,7 @@ function startCommunicationNetwork(cb){
   });
 }
 
-function joinCommunicationNetwork(ipAddress, cb){
+function joinCommunicationNetwork(cb){
   console.log('[*] Joining communication network...');
   var newNetworkSetup = async.seq(
     clearCommunicationFolder,
@@ -462,10 +447,10 @@ function joinCommunicationNetwork(ipAddress, cb){
   );
 
   var result = {
-    "managingNodeIpAddress": ipAddress,
+    "managingNodeIpAddress": remoteIpAddress,
     "web3IPCHost": './CommunicationNode/geth.ipc',
     "web3RPCProvider": 'http://localhost:40010',
-    "enode": "enode://9443bd2c5ccc5978831088755491417fe0c3866537b5e9638bcb6ad34cb9bcc58a9338bb492590ff200a54b43a6a03e4a7e33fa111d0a7f6b7192d1ca050f300@"+ipAddress+":40000"
+    "enode": "enode://9443bd2c5ccc5978831088755491417fe0c3866537b5e9638bcb6ad34cb9bcc58a9338bb492590ff200a54b43a6a03e4a7e33fa111d0a7f6b7192d1ca050f300@"+remoteIpAddress+":40000"
   };
   newNetworkSetup(result, function(err, res){
     if (err) { return onErr(err); }
@@ -482,10 +467,8 @@ function startNewQuorumNetwork(communicationNetwork, cb){
     createDirectories,
     createNewConstellationKeys, 
     createConstellationConfig,
-    createConstellation2Config,
     getNewGethAccount,
     getNewGethAccount,
-    getNewGethAccount2,
     createQuorumConfig,
     createGenesisBlockConfig,
     startQuorumNode,
@@ -495,13 +478,23 @@ function startNewQuorumNetwork(communicationNetwork, cb){
 
   var result = {
     communicationNetwork: communicationNetwork,
-    folders: ['Blockchain', 'Blockchain2', 'Constellation', 'Constellation2'], 
-    constellationSetup: [
+    folders: ['Blockchain', 'Constellation'], 
+    constellationKeySetup: [
       {folderName: 'Constellation', fileName: 'node'},
       {folderName: 'Constellation', fileName: 'nodeArch'},
-      {folderName: 'Constellation2', fileName: 'node'},
-      {folderName: 'Constellation2', fileName: 'nodeArch'}
     ],
+    constellationConfigSetup: { 
+      configName: 'constellation.config', 
+      folderName: 'Constellation', 
+      localIpAddress : localIpAddress, 
+      localPort : 9000, 
+      remoteIpAddress : remoteIpAddress, 
+      remotePort : 9000, 
+      publicKeyFileName: 'node.pub', 
+      privateKeyFileName: 'node.key', 
+      publicArchKeyFileName: 'nodeArch.pub', 
+      privateArchKeyFileName: 'nodeArch.key', 
+    },
     "web3IPCHost": './Blockchain/geth.ipc',
     "web3RPCProvider": 'http://localhost:20010',
   };
@@ -530,10 +523,22 @@ function joinQuorumNetwork(communicationNetwork, cb){
 
   var result = {
     folders: ['Blockchain', 'Constellation'],
-    constellationSetup: [
+    constellationKeySetup: [
       {folderName: 'Constellation', fileName: 'node'},
       {folderName: 'Constellation', fileName: 'nodeArch'}
     ],
+    constellationConfigSetup: { 
+      configName: 'constellation.config', 
+      folderName: 'Constellation', 
+      localIpAddress : localIpAddress, 
+      localPort : 9000, 
+      remoteIpAddress : remoteIpAddress, 
+      remotePort : 9000, 
+      publicKeyFileName: 'node.pub', 
+      privateKeyFileName: 'node.key', 
+      publicArchKeyFileName: 'nodeArch.pub', 
+      privateArchKeyFileName: 'nodeArch.key', 
+    },
     communicationNetwork: communicationNetwork,
     "web3IPCHost": './Blockchain/geth.ipc',
     "web3RPCProvider": 'http://localhost:20010'
@@ -548,6 +553,7 @@ function joinQuorumNetwork(communicationNetwork, cb){
 var quorumNetwork = null;
 var communicationNetwork = null;
 var localIpAddress = null;
+var remoteIpAddress = null;
 function mainLoop(){
   prompt.start();
   if(localIpAddress){
@@ -574,7 +580,8 @@ function mainLoop(){
         console.log('In order to join an existing network, '
           + 'please enter the ip address of one of the managing nodes');
         prompt.get(['ipAddress'], function (err, network) {
-          joinCommunicationNetwork(network.ipAddress, function(err, result){
+          remoteIpAddress = network.ipAddress;
+          joinCommunicationNetwork(function(err, result){
             if (err) { return onErr(err); }
             communicationNetwork = Object.assign({}, result);
             result = null;
