@@ -12,11 +12,12 @@ This project aims to make creating Quorum networks easy.
 
 Installation quide for https://github.com/jpmorganchase/quorum
 
-1. `git clone https://github.com/jpmorganchase/quorum.git`
-2. `cd quorum`
-3. `make all`
-4. Add /build/bin to your PATH: `echo "PATH=\$PATH:"$PWD/build/bin >> ~/.bashrc`
-5. `source ~/.bashrc`
+1. `sudo apt-get install -y build-essential`
+2. `git clone https://github.com/jpmorganchase/quorum.git`
+3. `cd quorum`
+4. `make all`
+5. Add /build/bin to your PATH: `echo "PATH=\$PATH:"$PWD/build/bin >> ~/.bashrc`
+6. `source ~/.bashrc`
 
 ## Installing Constellation
 
