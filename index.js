@@ -512,7 +512,6 @@ function joinQuorumNetwork(communicationNetwork, cb){
     clearDirectories,
     createDirectories,
     createNewConstellationKeys, 
-    createNewConstellationArchiveKeys,
     createConstellationConfig,
     getGenesisBlockConfig,
     startQuorumParticipantNode,
