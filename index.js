@@ -123,8 +123,34 @@ function getIpAddress(result, cb){
   cb(null, result);
 }
 
-function updateConstellationConfig(result, cb){
-  cb(null, result);
+function createConstellationConfig(result, cb){
+  var config = 'url = "http://localhost:9000/"\n';
+  config += 'port = 9000\n';
+  config += 'socketPath = "Constellation/socket.ipc"\n';
+  config += 'otherNodeUrls = ["http://localhost:9001/"]\n';
+  config += 'publicKeyPath = "Constellation/node.pub"\n';
+  config += 'privateKeyPath = "Constellation/node.key"\n';
+  config += 'archivalPublicKeyPath = "Constellation/nodeArch.pub"\n';
+  config += 'archivalPrivateKeyPath = "Constellation/nodeArch.key"\n';
+  config += 'storagePath = "Constellation/data"';
+  fs.writeFile('constellation.config', config, function(err, res){
+    cb(err, result);
+  });
+}
+
+function createConstellation2Config(result, cb){
+  var config = 'url = "http://localhost:9001/"\n';
+  config += 'port = 9001\n';
+  config += 'socketPath = "Constellation2/socket.ipc"\n';
+  config += 'otherNodeUrls = ["http://localhost:9000/"]\n';
+  config += 'publicKeyPath = "Constellation2/node.pub"\n';
+  config += 'privateKeyPath = "Constellation2/node.key"\n';
+  config += 'archivalPublicKeyPath = "Constellation2/nodeArch.pub"\n';
+  config += 'archivalPrivateKeyPath = "Constellation2/nodeArch.key"\n';
+  config += 'storagePath = "Constellation2/data"';
+  fs.writeFile('constellation2.config', config, function(err, res){
+    cb(err, result);
+  });
 }
 
 function getNewGethAccount(result, cb){
@@ -505,7 +531,8 @@ function startNewQuorumNetwork(communicationNetwork, cb){
     createNewConstellationKeys2, 
     createNewConstellationArchiveKeys2,
     getIpAddress,
-    updateConstellationConfig,
+    createConstellationConfig,
+    createConstellation2Config,
     getNewGethAccount,
     getNewGethAccount,
     getNewGethAccount2,
@@ -538,7 +565,7 @@ function joinQuorumNetwork(communicationNetwork, cb){
     createNewConstellationKeys, 
     createNewConstellationArchiveKeys,
     getIpAddress,
-    updateConstellationConfig,
+    createConstellationConfig,
     getGenesisBlockConfig,
     startQuorumParticipantNode,
     createWeb3Connection,
