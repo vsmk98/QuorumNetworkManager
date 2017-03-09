@@ -150,9 +150,9 @@ function getNewGethAccount(result, cb){
   var options = {encoding: 'utf8', timeout: 10*1000};
   var child = exec('geth --datadir Blockchain account new', options);
   child.stdout.on('data', function(data){
-    if(data.indexOf('Your new account') == 0){
+    if(data.indexOf('Your new account') >= 0){
       child.stdin.write('\n');
-    } else if(data.indexOf('Repeat') == 1){
+    } else if(data.indexOf('Repeat') >= 0){
       child.stdin.write('\n');
     } else if(data.indexOf('Address') == 0){
       var index = data.indexOf('{');
@@ -174,9 +174,9 @@ function getNewGethAccount2(result, cb){
   var options = {encoding: 'utf8', timeout: 10*1000};
   var child = exec('geth --datadir Blockchain2 account new', options);
   child.stdout.on('data', function(data){
-    if(data.indexOf('Your new account') == 0){
+    if(data.indexOf('Your new account') >= 0){
       child.stdin.write('\n');
-    } else if(data.indexOf('Repeat') == 1){
+    } else if(data.indexOf('Repeat') >= 0){
       child.stdin.write('\n');
     } else if(data.indexOf('Address') == 0){
       var index = data.indexOf('{');
@@ -232,7 +232,6 @@ function startQuorumNode(result, cb){
   cmd += ' '+result.addressList[0];
   cmd += ' '+result.addressList[2];
   cmd += ' '+localIpAddress;
-  console.log('cmd', cmd);
   var child = exec(cmd, options);
   child.stdout.on('data', function(data){
     cb(null, result);
