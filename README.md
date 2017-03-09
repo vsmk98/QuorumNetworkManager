@@ -37,6 +37,8 @@ Installation guide for https://github.com/jpmorganchase/constellation
 
 Installation guide for https://github.com/davebryson/quorum-genesis
 
+NOTE: the public-key (use ssh-keygen to generate one) of the machine you are working on will have to be added to your github account to clone this repo via ssh
+
 1. `git clone git@github.com:davebryson/quorum-genesis.git`
 2. `cd quorum-genesis`
 3. `sudo npm install -g`
