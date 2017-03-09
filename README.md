@@ -8,9 +8,21 @@ This project aims to make creating Quorum networks easy.
 2. Ubuntu 16.04 (this has to do with Constellation)
 3. NodeJS v4.5+ (tested on v4.8.0) (https://nodejs.org/en/download/package-manager/)
 
+## Installing Ethereum
+
+NOTE1: This project makes use of bootnode for now, hence we need to install the below
+NOTE2: We will need to use Quorum's geth, so do a `sudo /usr/bin/geth /usr/bin/normalGeth`
+
+1. `sudo apt-get install software-properties-common`
+2. `sudo add-apt-repository -y ppa:ethereum/ethereum`
+3. `sudo apt-get update`
+4. `sudo apt-get install ethereum`
+
 ## Installing Quorum
 
 Installation quide for https://github.com/jpmorganchase/quorum
+
+NOTE: This should replace your currently installed `geth`. 
 
 1. `sudo apt-get install -y build-essential`
 2. `git clone https://github.com/jpmorganchase/quorum.git`
@@ -42,3 +54,11 @@ NOTE: the public-key (use ssh-keygen to generate one) of the machine you are wor
 1. `git clone git@github.com:davebryson/quorum-genesis.git`
 2. `cd quorum-genesis`
 3. `sudo npm install -g`
+
+## Installing the QuorumNetworkManager
+
+1. `git clone git@github.com:coeniebeyers/QuorumNetworkManager.git`
+2. `cd QuorumNetworkManager`
+3. `npm install`
+
+
