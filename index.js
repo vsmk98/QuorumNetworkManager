@@ -5,7 +5,7 @@ var prompt = require('prompt');
 var util = require('./util.js');
 
 function killallGethBootnodeConstellationNode(cb){
-  var cmd = 'killall';
+  var cmd = 'killall -9';
   cmd += ' geth';
   cmd += ' bootnode';
   cmd += ' constellation-node';
@@ -49,62 +49,23 @@ function createDirectories(result, cb){
 }
 
 function createNewConstellationKeys(result, cb){
-  var child = exec('cd Constellation && constellation-enclave-keygen node');
+  var counter = result.constellationSetup.length;
+  var cmd = "";
+  for(var i in result.constellationSetup){
+    var folderName = result.constellationSetup[i].folderName;
+    var fileName = result.constellationSetup[i].fileName;
+    cmd += 'cd '+folderName+' && constellation-enclave-keygen '+fileName+' && cd .. && '; 
+  }
+  cmd = cmd.substring(0, cmd.length-4);
+  console.log('cmd:', cmd);
+  var child = exec(cmd);
   child.stdout.on('data', function(data){
-    if(data == 'Lock key pair node with password [none]: '){
+    if(data.indexOf('Lock key pair') >= 0){
       child.stdin.write('\n');
-      cb(null, result);
-    } else {
-      console.log('Unexpected data:', data);
-      cb(null, result);
-    }
-  });
-  child.stderr.on('data', function(error){
-    console.log('ERROR:', error);
-    cb(error, null);
-  });
-}
-
-function createNewConstellationArchiveKeys(result, cb){
-  var child = exec('cd Constellation && constellation-enclave-keygen nodeArch');
-  child.stdout.on('data', function(data){
-    if(data == 'Lock key pair nodeArch with password [none]: '){
-      child.stdin.write('\n');
-      cb(null, result);
-    } else {
-      console.log('Unexpected data:', data);
-      cb(null, result);
-    }
-  });
-  child.stderr.on('data', function(error){
-    console.log('ERROR:', error);
-    cb(error, null);
-  });
-}
-
-function createNewConstellationKeys2(result, cb){
-  var child = exec('cd Constellation2 && constellation-enclave-keygen node');
-  child.stdout.on('data', function(data){
-    if(data == 'Lock key pair node with password [none]: '){
-      child.stdin.write('\n');
-      cb(null, result);
-    } else {
-      console.log('Unexpected data:', data);
-      cb(null, result);
-    }
-  });
-  child.stderr.on('data', function(error){
-    console.log('ERROR:', error);
-    cb(error, null);
-  });
-}
-
-function createNewConstellationArchiveKeys2(result, cb){
-  var child = exec('cd Constellation2 && constellation-enclave-keygen nodeArch');
-  child.stdout.on('data', function(data){
-    if(data == 'Lock key pair nodeArch with password [none]: '){
-      child.stdin.write('\n');
-      cb(null, result);
+      counter--;
+      if(counter <= 0){
+        cb(null, result);
+      } 
     } else {
       console.log('Unexpected data:', data);
       cb(null, result);
@@ -520,9 +481,6 @@ function startNewQuorumNetwork(communicationNetwork, cb){
     clearDirectories,
     createDirectories,
     createNewConstellationKeys, 
-    createNewConstellationArchiveKeys,
-    createNewConstellationKeys2, 
-    createNewConstellationArchiveKeys2,
     createConstellationConfig,
     createConstellation2Config,
     getNewGethAccount,
@@ -538,6 +496,12 @@ function startNewQuorumNetwork(communicationNetwork, cb){
   var result = {
     communicationNetwork: communicationNetwork,
     folders: ['Blockchain', 'Blockchain2', 'Constellation', 'Constellation2'], 
+    constellationSetup: [
+      {folderName: 'Constellation', fileName: 'node'},
+      {folderName: 'Constellation', fileName: 'nodeArch'},
+      {folderName: 'Constellation2', fileName: 'node'},
+      {folderName: 'Constellation2', fileName: 'nodeArch'}
+    ],
     "web3IPCHost": './Blockchain/geth.ipc',
     "web3RPCProvider": 'http://localhost:20010',
   };
@@ -566,6 +530,10 @@ function joinQuorumNetwork(communicationNetwork, cb){
 
   var result = {
     folders: ['Blockchain', 'Constellation'],
+    constellationSetup: [
+      {folderName: 'Constellation', fileName: 'node'},
+      {folderName: 'Constellation', fileName: 'nodeArch'}
+    ],
     communicationNetwork: communicationNetwork,
     "web3IPCHost": './Blockchain/geth.ipc',
     "web3RPCProvider": 'http://localhost:20010'
