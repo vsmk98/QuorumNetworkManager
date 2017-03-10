@@ -362,10 +362,10 @@ function getEnodeForQuorumNetwork(result, cb){
         var enode = message.replace('response|enode', '').substring(1);
         console.log(new Date()+'Emitting new Enode:', enode);
         events.emit('newEnode', enode);
-        cb(err, result);
       }
     });
   });
+  cb(null, result);
 }
 
 function startCommunicationNetwork(cb){
