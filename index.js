@@ -227,7 +227,8 @@ function createWeb3Connection(result, cb){
 function listenToNewEnodes(result, cb){
   var web3IPC = result.web3IPC;
   events.on('newEnode', function(enode){
-    result.web3IPC.admin.addPeer(enode, function(err, res){
+    console.log(new Date()+'Adding new Enode:', enode);
+    web3IPC.admin.addPeer(enode, function(err, res){
       if(err){console.log('ERROR:', err);}
     });
   });
@@ -318,6 +319,7 @@ function addEnodeCommunicationHandler(result, cb){
         if(err){console.log('ERROR:', err);}
         var enodeResponse = 'response|enode'+nodeInfo.enode;
         enodeResponse = enodeResponse.replace('\[\:\:\]', localIpAddress);
+        console.log(new Date()+'Broadcasting new Enode:', enodeResponse);
         var hexString = new Buffer(enodeResponse).toString('hex');        
         commWeb3RPC.shh.post({
           "topics": ["Enode"],
@@ -359,8 +361,8 @@ function getEnodeForQuorumNetwork(result, cb){
       if(message.indexOf('response|enode') >= 0){
         filter.stopWatching();
         var enode = message.replace('response|enode', '').substring(1);
+        console.log(new Date()+'Emitting new Enode:', enode);
         events.emit('newEnode', enode);
-        result.enode = enode;
         cb(err, result);
       }
     });
