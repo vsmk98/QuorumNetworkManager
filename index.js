@@ -359,7 +359,6 @@ function getEnodeForQuorumNetwork(result, cb){
       if(err){console.log("ERROR:", err);};
       var message = util.Hex2a(msg.payload);
       if(message.indexOf('response|enode') >= 0){
-        filter.stopWatching();
         var enode = message.replace('response|enode', '').substring(1);
         console.log(new Date()+'Emitting new Enode:', enode);
         events.emit('newEnode', enode);
@@ -475,7 +474,8 @@ function joinQuorumNetwork(communicationNetwork, cb){
     startQuorumParticipantNode,
     createWeb3Connection,
     listenToNewEnodes,
-    getEnodeForQuorumNetwork
+    getEnodeForQuorumNetwork,
+    addEnodeCommunicationHandler
   );
 
   var result = {
