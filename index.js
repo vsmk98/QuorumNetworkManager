@@ -348,9 +348,8 @@ function getEnodeForQuorumNetwork(result, cb){
       if(err){console.log("ERROR:", err);};
       var message = util.Hex2a(msg.payload);
       if(message.indexOf('response|enode') >= 0){
-        //filter.stopWatching();
+        filter.stopWatching();
         var enode = message.replace('response|enode', '').substring(1);
-        //enode = enode.replace('\[\:\:\]', comm.managingNodeIpAddress);
         result.enode = enode;
         cb(err, result);
       }
