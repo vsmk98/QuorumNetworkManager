@@ -7,7 +7,6 @@ var util = require('./util.js');
 function killallGethBootnodeConstellationNode(cb){
   var cmd = 'killall -9';
   cmd += ' geth';
-  cmd += ' bootnode';
   cmd += ' constellation-node';
   var child = exec(cmd, function(){
     cb(null, null);
@@ -194,32 +193,6 @@ function startQuorumParticipantNode(result, cb){
   var child = exec(cmd, options);
   child.stdout.on('data', function(data){
     console.log('Started quorum participant node');
-    cb(null, result);
-  });
-  child.stderr.on('data', function(error){
-    console.log('ERROR:', error);
-    cb(error, null);
-  });
-}
-
-function clearCommunicationFolder(result, cb){
-  var cmd = 'rm -rf';
-  cmd += ' CommunicationNode';
-  var child = exec(cmd, function(){
-    cb(null, result);
-  });
-  child.stderr.on('data', function(error){
-    console.log('ERROR:', error);
-    cb(error, null);
-  });
-}
-
-function createCommunicationFolder(result, cb){
-  var cmd = 'mkdir';
-  cmd += ' CommunicationNode';
-  cmd += ' && mkdir';
-  cmd += ' CommunicationNode/geth';
-  var child = exec(cmd, function(){
     cb(null, result);
   });
   child.stderr.on('data', function(error){
@@ -416,8 +389,8 @@ function getEnodeForQuorumNetwork(result, cb){
 function startCommunicationNetwork(cb){
   console.log('[*] Starting communication network...');
   var newNetworkSetup = async.seq(
-    clearCommunicationFolder,
-    createCommunicationFolder,
+    clearDirectories,
+    createDirectories,
     copyCommunicationNodeKey,
     startCommunicationNode,
     createWeb3Connection,
@@ -425,6 +398,7 @@ function startCommunicationNetwork(cb){
   );
 
   var result = {
+    folders: ['CommunicationNode', 'CommunicationNode/geth'], 
     "web3IPCHost": './CommunicationNode/geth.ipc',
     "web3RPCProvider": 'http://localhost:40010'
   };
@@ -438,14 +412,15 @@ function startCommunicationNetwork(cb){
 function joinCommunicationNetwork(cb){
   console.log('[*] Joining communication network...');
   var newNetworkSetup = async.seq(
-    clearCommunicationFolder,
-    createCommunicationFolder,
+    clearDirectories,
+    createDirectories,
     startCommunicationNode,
     createWeb3Connection,
     connectToPeer
   );
 
   var result = {
+    folders: ['CommunicationNode', 'CommunicationNode/geth'], 
     "managingNodeIpAddress": remoteIpAddress,
     "web3IPCHost": './CommunicationNode/geth.ipc',
     "web3RPCProvider": 'http://localhost:40010',
@@ -548,49 +523,62 @@ function joinQuorumNetwork(communicationNetwork, cb){
   });
 }
 
+prompt.start();
 var quorumNetwork = null;
 var communicationNetwork = null;
 var localIpAddress = null;
 var remoteIpAddress = null;
+
+function handleStartingNewQuorumNetwork(cb){
+  startCommunicationNetwork(function(err, result){
+    if (err) { return onErr(err); }
+    communicationNetwork = Object.assign({}, result);
+    result = null;
+    startNewQuorumNetwork(communicationNetwork, function(err, result){
+      if (err) { return onErr(err); }
+      quorumNetwork = Object.assign({}, result);
+      result = null;
+      cb();
+    });
+  });  
+}
+
+function handleJoiningExistingQuorumNetwork(cb){
+  console.log('In order to join an existing network, '
+    + 'please enter the ip address of one of the managing nodes');
+  prompt.get(['ipAddress'], function (err, network) {
+    remoteIpAddress = network.ipAddress;
+    joinCommunicationNetwork(function(err, result){
+      if (err) { return onErr(err); }
+      communicationNetwork = Object.assign({}, result);
+      result = null;
+      joinQuorumNetwork(communicationNetwork, function(err, result){
+        if (err) { return onErr(err); }
+        quorumNetwork = Object.assign({}, result);
+        result = null;
+        cb();
+      }); 
+    });      
+  });  
+}
+
 function mainLoop(){
-  prompt.start();
   if(localIpAddress){
     console.log('Please select an option below:');
     console.log('1) Start new Quorum network');
     console.log('2) Join an existing Quorum network');
-    console.log('3) killall geth bootnode constellation-node');
+    console.log('3) killall geth constellation-node');
     console.log('0) Quit');
     prompt.get(['option'], function (err, result) {
       if (err) { return onErr(err); }
       if(result.option == 1){
-        startCommunicationNetwork(function(err, result){
-          if (err) { return onErr(err); }
-          communicationNetwork = Object.assign({}, result);
-          result = null;
-          startNewQuorumNetwork(communicationNetwork, function(err, result){
-            if (err) { return onErr(err); }
-            quorumNetwork = Object.assign({}, result);
-            result = null;
-            mainLoop();
-          });
-        });  
+        handleStartingNewQuorumNetwork(function(){
+          mainLoop();
+        });
       } else if(result.option == 2){
-        console.log('In order to join an existing network, '
-          + 'please enter the ip address of one of the managing nodes');
-        prompt.get(['ipAddress'], function (err, network) {
-          remoteIpAddress = network.ipAddress;
-          joinCommunicationNetwork(function(err, result){
-            if (err) { return onErr(err); }
-            communicationNetwork = Object.assign({}, result);
-            result = null;
-            joinQuorumNetwork(communicationNetwork, function(err, result){
-              if (err) { return onErr(err); }
-              quorumNetwork = Object.assign({}, result);
-              result = null;
-              mainLoop();
-            }); 
-          });      
-        });  
+        handleJoiningExistingQuorumNetwork(function(){
+          mainLoop();
+        });
       } else if(result.option == 3){
         killallGethBootnodeConstellationNode(function(err, result){
           if (err) { return onErr(err); }
