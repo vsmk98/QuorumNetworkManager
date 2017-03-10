@@ -234,11 +234,10 @@ function connectToPeer(result, cb){
 }
 
 // TODO: Add check whether requester has correct permissions
-// TODO: Rename topic to genesis config
-function addNewPeerCommunicationHandler(result, cb){
+function genesisConfigHandler(result, cb){
   var web3RPC = result.web3RPC;
   var web3IPC = result.web3IPC;
-  web3RPC.shh.filter({"topics":["NewPeer"]}).watch(function(err, msg) {
+  web3RPC.shh.filter({"topics":["GenesisConfig"]}).watch(function(err, msg) {
     if(err){console.log("ERROR:", err);};
     var message = util.Hex2a(msg.payload);
     if(message.indexOf('request|genesisConfig') >= 0){
@@ -247,7 +246,7 @@ function addNewPeerCommunicationHandler(result, cb){
         var genesisConfig = 'response|genesisConfig'+data;
         var hexString = new Buffer(genesisConfig).toString('hex');        
         web3RPC.shh.post({
-          "topics": ["NewPeer"],
+          "topics": ["GenesisConfig"],
           "payload": hexString,
           "ttl": 10,
           "workToProve": 1
@@ -270,13 +269,13 @@ function getGenesisBlockConfig(result, cb){
 
   shh.post({
     "from": id,
-    "topics": ["NewPeer"],
+    "topics": ["GenesisConfig"],
     "payload": hexString,
     "ttl": 10,
     "workToProve": 1
   }, function(err, res){
     if(err){console.log('err', err);}
-    var filter = shh.filter({"topics":["NewPeer"]}).watch(function(err, msg) {
+    var filter = shh.filter({"topics":["GenesisConfig"]}).watch(function(err, msg) {
       if(err){console.log("ERROR:", err);};
       var message = util.Hex2a(msg.payload);
       if(message.indexOf('response|genesisConfig') >= 0){
@@ -363,7 +362,7 @@ function startCommunicationNetwork(cb){
     copyCommunicationNodeKey,
     startCommunicationNode,
     createWeb3Connection,
-    addNewPeerCommunicationHandler    
+    genesisConfigHandler    
   );
 
   var result = {
