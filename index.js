@@ -3,6 +3,7 @@ var fs = require('fs');
 var async = require('async');
 var prompt = require('prompt');
 var util = require('./util.js');
+var events = require('./eventEmitter.js');
 
 function killallGethBootnodeConstellationNode(cb){
   var cmd = 'killall -9';
@@ -223,6 +224,16 @@ function createWeb3Connection(result, cb){
   cb(null, result);
 }
 
+function listenToNewEnodes(result, cb){
+  var web3IPC = result.web3IPC;
+  events.on('newEnode', function(enode){
+    result.web3IPC.admin.addPeer(enode, function(err, res){
+      if(err){console.log('ERROR:', err);}
+    });
+  });
+  cb(null, result);
+}
+
 function connectToPeer(result, cb){
   console.log('Adding peer...');
   var enode = result.enode;
@@ -291,8 +302,9 @@ function getGenesisBlockConfig(result, cb){
   });
 }
 
-// TODO: Add to and from fields to validate origins
+// TODO: Add to and from fields to validate origins & only respond to others requests
 // TODO: Add check whether requester has correct permissions
+// This will broadcast this node's enode to any 'request|enode' message
 function addEnodeCommunicationHandler(result, cb){
   var web3RPC = result.web3RPC;
   var web3IPC = result.web3IPC;
@@ -323,7 +335,7 @@ function addEnodeCommunicationHandler(result, cb){
 }
 
 
-// TODO: Add to and from fields to validate origins
+// TODO: Add to and from fields to validate origins & only respond to others requests
 // TODO: Test assumption that we want to connect to all nodes that respond with enodes
 function getEnodeForQuorumNetwork(result, cb){
   var comm = result.communicationNetwork;
@@ -347,6 +359,7 @@ function getEnodeForQuorumNetwork(result, cb){
       if(message.indexOf('response|enode') >= 0){
         filter.stopWatching();
         var enode = message.replace('response|enode', '').substring(1);
+        events.emit('newEnode', enode);
         result.enode = enode;
         cb(err, result);
       }
@@ -415,7 +428,8 @@ function startNewQuorumNetwork(communicationNetwork, cb){
     createGenesisBlockConfig,
     startQuorumNode,
     createWeb3Connection,
-    addEnodeCommunicationHandler
+    addEnodeCommunicationHandler,
+    listenToNewEnodes
   );
 
   var result = {
@@ -458,8 +472,8 @@ function joinQuorumNetwork(communicationNetwork, cb){
     getGenesisBlockConfig,
     startQuorumParticipantNode,
     createWeb3Connection,
-    getEnodeForQuorumNetwork,
-    connectToPeer
+    listenToNewEnodes,
+    getEnodeForQuorumNetwork
   );
 
   var result = {
