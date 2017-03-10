@@ -115,30 +115,6 @@ function getNewGethAccount(result, cb){
   });
 }
 
-function getNewGethAccount2(result, cb){
-  var options = {encoding: 'utf8', timeout: 10*1000};
-  var child = exec('geth --datadir Blockchain2 account new', options);
-  child.stdout.on('data', function(data){
-    if(data.indexOf('Your new account') >= 0){
-      child.stdin.write('\n');
-    } else if(data.indexOf('Repeat') >= 0){
-      child.stdin.write('\n');
-    } else if(data.indexOf('Address') == 0){
-      var index = data.indexOf('{');
-      var address = '0x'+data.substring(index+1, data.length-2);
-      if(result.addressList == undefined){
-        result.addressList = [];
-      }
-      result.addressList.push(address);
-      cb(null, result);
-    } 
-  });
-  child.stderr.on('data', function(error){
-    console.log('ERROR:', error);
-    cb(error, null);
-  });
-}
-
 function createQuorumConfig(result, cb){
   console.log('creating genesis config...');
   var options = {encoding: 'utf8', timeout: 100*1000};
@@ -174,8 +150,6 @@ function startQuorumNode(result, cb){
   var cmd = './startQuorumBMAndBVNodes.sh';
   cmd += ' '+result.addressList[1];
   cmd += ' '+result.addressList[0];
-  cmd += ' '+result.addressList[2];
-  cmd += ' '+localIpAddress;
   var child = exec(cmd, options);
   child.stdout.on('data', function(data){
     cb(null, result);
@@ -288,40 +262,7 @@ function addNewPeerCommunicationHandler(result, cb){
   cb(null, result);
 }
 
-// TODO: Add check whether requester has correct permissions
-function addEnodeCommunicationHandler(result, cb){
-  console.log('adding enode communication handler...');
-  var web3RPC = result.web3RPC;
-  var web3IPC = result.web3IPC;
-  var commWeb3RPC = result.communicationNetwork.web3RPC;
-  var commWeb3IPC = result.communicationNetwork.web3IPC;
-  commWeb3RPC.shh.filter({"topics":["Enode"]}).watch(function(err, msg) {
-    if(err){console.log("ERROR:", err);};
-    var message = util.Hex2a(msg.payload);
-    if(message.indexOf('request|enode') >= 0){
-      web3IPC.admin.nodeInfo(function(err, nodeInfo){
-        if(err){console.log('ERROR:', err);}
-        var enodeResponse = 'response|enode'+nodeInfo.enode;
-        var hexString = new Buffer(enodeResponse).toString('hex');        
-        commWeb3RPC.shh.post({
-          "topics": ["Enode"],
-          "payload": hexString,
-          "ttl": 10,
-          "workToProve": 1
-        }, function(err, res){
-          if(err){console.log('err', err);}
-          console.log('Enode message sent:', res);
-        });
-      });
-    }
-  });
-
-  console.log('added enode communication handler');
-  cb(null, result);
-}
-
 // TODO: Add to and from fields to validate origins
-// TODO: Unsubscribe once genesisConfig has been received
 function getGenesisBlockConfig(result, cb){
   var shh = result.communicationNetwork.web3RPC.shh;
   
@@ -337,10 +278,11 @@ function getGenesisBlockConfig(result, cb){
     "workToProve": 1
   }, function(err, res){
     if(err){console.log('err', err);}
-    shh.filter({"topics":["NewPeer"]}).watch(function(err, msg) {
+    var filter = shh.filter({"topics":["NewPeer"]}).watch(function(err, msg) {
       if(err){console.log("ERROR:", err);};
       var message = util.Hex2a(msg.payload);
       if(message.indexOf('response|genesisConfig') >= 0){
+        filter.stopWatching();
         var genesisConfig = message.replace('response|genesisConfig', '').substring(1);
         genesisConfig = genesisConfig.replace(/\\n/g, '');
         genesisConfig = genesisConfig.replace(/\\/g, '');
@@ -353,9 +295,40 @@ function getGenesisBlockConfig(result, cb){
 }
 
 // TODO: Add to and from fields to validate origins
-// TODO: Unsubscribe once enode has been received
+// TODO: Add check whether requester has correct permissions
+function addEnodeCommunicationHandler(result, cb){
+  var web3RPC = result.web3RPC;
+  var web3IPC = result.web3IPC;
+  var commWeb3RPC = result.communicationNetwork.web3RPC;
+  var commWeb3IPC = result.communicationNetwork.web3IPC;
+  commWeb3RPC.shh.filter({"topics":["Enode"]}).watch(function(err, msg) {
+    if(err){console.log("ERROR:", err);};
+    var message = util.Hex2a(msg.payload);
+    if(message.indexOf('request|enode') >= 0){
+      web3IPC.admin.nodeInfo(function(err, nodeInfo){
+        if(err){console.log('ERROR:', err);}
+        var enodeResponse = 'response|enode'+nodeInfo.enode;
+        enodeResponse = enodeResponse.replace('\[\:\:\]', localIpAddress);
+        var hexString = new Buffer(enodeResponse).toString('hex');        
+        commWeb3RPC.shh.post({
+          "topics": ["Enode"],
+          "payload": hexString,
+          "ttl": 10,
+          "workToProve": 1
+        }, function(err, res){
+          if(err){console.log('err', err);}
+        });
+      });
+    }
+  });
+
+  cb(null, result);
+}
+
+
+// TODO: Add to and from fields to validate origins
+// TODO: Test assumption that we want to connect to all nodes that respond with enodes
 function getEnodeForQuorumNetwork(result, cb){
-  console.log('requesting enode for quorum network...');
   var comm = result.communicationNetwork;
   var shh = comm.web3RPC.shh;
   
@@ -371,14 +344,13 @@ function getEnodeForQuorumNetwork(result, cb){
     "workToProve": 1
   }, function(err, res){
     if(err){console.log('err', err);}
-    shh.filter({"topics":["Enode"]}).watch(function(err, msg) {
+    var filter = shh.filter({"topics":["Enode"]}).watch(function(err, msg) {
       if(err){console.log("ERROR:", err);};
-      console.log('enode response received');
       var message = util.Hex2a(msg.payload);
       if(message.indexOf('response|enode') >= 0){
+        //filter.stopWatching();
         var enode = message.replace('response|enode', '').substring(1);
-        enode = enode.replace('\[\:\:\]', comm.managingNodeIpAddress);
-        console.log('enode:', enode);
+        //enode = enode.replace('\[\:\:\]', comm.managingNodeIpAddress);
         result.enode = enode;
         cb(err, result);
       }
