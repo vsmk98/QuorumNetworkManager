@@ -246,7 +246,6 @@ function addNewPeerCommunicationHandler(result, cb){
         if(err){console.log('ERROR:', err);}   
         var genesisConfig = 'response|genesisConfig'+data;
         var hexString = new Buffer(genesisConfig).toString('hex');        
-        console.log('Created hex string');
         web3RPC.shh.post({
           "topics": ["NewPeer"],
           "payload": hexString,
@@ -254,7 +253,6 @@ function addNewPeerCommunicationHandler(result, cb){
           "workToProve": 1
         }, function(err, res){
           if(err){console.log('err', err);}
-          console.log('NewPeer message sent:', res);
         });
       });
     }
