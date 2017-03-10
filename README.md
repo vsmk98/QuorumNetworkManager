@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/coeniebeyers/QuorumNetworkManager.png?label=ready&title=Ready)](https://waffle.io/coeniebeyers/QuorumNetworkManager)
 This project aims to make creating Quorum networks easy.
 
 # Getting started
