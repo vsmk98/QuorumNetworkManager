@@ -546,8 +546,8 @@ function handleJoiningExistingQuorumNetwork(cb){
 function mainLoop(){
   if(localIpAddress){
     console.log('Please select an option below:');
-    console.log('1) Start new Quorum network');
-    console.log('2) Join an existing Quorum network');
+    console.log('1) Start new Quorum network [WARNING: this clears everything]');
+    console.log('2) Join an existing Quorum network [WARNING: this clears everything]');
     console.log('3) killall geth constellation-node');
     console.log('0) Quit');
     prompt.get(['option'], function (err, result) {
