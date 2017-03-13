@@ -504,6 +504,46 @@ function joinQuorumNetwork(communicationNetwork, cb){
   });
 }
 
+function reconnectToQuorumNetwork(communicationNetwork, cb){
+  console.log('[*] Reconnecting to existing quorum network...');
+  
+  var newNetworkSetup = async.seq(
+    startQuorumParticipantNode,
+    createWeb3Connection,
+    listenToNewEnodes,
+    getEnodeForQuorumNetwork,
+    addEnodeCommunicationHandler
+  );
+
+  var result = {
+    folders: ['Blockchain', 'Constellation'],
+    constellationKeySetup: [
+      {folderName: 'Constellation', fileName: 'node'},
+      {folderName: 'Constellation', fileName: 'nodeArch'}
+    ],
+    constellationConfigSetup: { 
+      configName: 'constellation.config', 
+      folderName: 'Constellation', 
+      localIpAddress : localIpAddress, 
+      localPort : 9000, 
+      remoteIpAddress : remoteIpAddress, 
+      remotePort : 9000, 
+      publicKeyFileName: 'node.pub', 
+      privateKeyFileName: 'node.key', 
+      publicArchKeyFileName: 'nodeArch.pub', 
+      privateArchKeyFileName: 'nodeArch.key', 
+    },
+    communicationNetwork: communicationNetwork,
+    "web3IPCHost": './Blockchain/geth.ipc',
+    "web3RPCProvider": 'http://localhost:20010'
+  };
+  newNetworkSetup(result, function(err, res){
+    if (err) { return onErr(err); }
+    console.log('[*] New network started');
+    cb(err, res); 
+  });
+}
+
 prompt.start();
 var quorumNetwork = null;
 var communicationNetwork = null;
@@ -543,12 +583,33 @@ function handleJoiningExistingQuorumNetwork(cb){
   });  
 }
 
+function handleReconnectingToQuorumNetwork(cb){
+  console.log('In order to reconnect, '
+    + 'please enter the ip address of one of the managing nodes');
+  prompt.get(['ipAddress'], function (err, network) {
+    remoteIpAddress = network.ipAddress;
+    joinCommunicationNetwork(function(err, result){
+      if (err) { return onErr(err); }
+      communicationNetwork = Object.assign({}, result);
+      result = null;
+      reconnectToQuorumNetwork(communicationNetwork, function(err, result){
+        if (err) { return onErr(err); }
+        quorumNetwork = Object.assign({}, result);
+        result = null;
+        cb();
+      }); 
+    });      
+  });  
+
+}
+
 function mainLoop(){
   if(localIpAddress){
     console.log('Please select an option below:');
-    console.log('1) Start new Quorum network [WARNING: this clears everything]');
-    console.log('2) Join an existing Quorum network [WARNING: this clears everything]');
-    console.log('3) killall geth constellation-node');
+    console.log('1) Start a new Quorum network [WARNING: this clears everything]');
+    console.log('2) Join an existing Quorum network, first time joining this network. [WARNING: this clears everything]');
+    console.log('3) Reconnect to the previously connected network');
+    console.log('4) killall geth constellation-node');
     console.log('0) Quit');
     prompt.get(['option'], function (err, result) {
       if (err) { return onErr(err); }
@@ -561,6 +622,10 @@ function mainLoop(){
           mainLoop();
         });
       } else if(result.option == 3){
+        handleReconnectingToQuorumNetwork(function(){
+          mainLoop();
+        });
+      } else if(result.option == 4){
         killallGethBootnodeConstellationNode(function(err, result){
           if (err) { return onErr(err); }
           quorumNetwork = null;
