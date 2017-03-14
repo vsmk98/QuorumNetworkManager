@@ -119,6 +119,7 @@ function startNewQuorumNetwork(communicationNetwork, cb){
   );
 
   var result = {
+    localIpAddress: localIpAddress,
     communicationNetwork: communicationNetwork,
     folders: ['Blockchain', 'Constellation'], 
     constellationKeySetup: [
@@ -155,15 +156,16 @@ function joinQuorumNetwork(communicationNetwork, cb){
     util.CreateDirectories,
     constellation.CreateNewKeys, 
     constellation.CreateConfig,
-    getGenesisBlockConfig,
+    whisper.GetGenesisBlockConfig,
     startQuorumParticipantNode,
-    createWeb3Connection,
+    util.CreateWeb3Connection,
     listenForNewEnodes,
-    getEnodeForQuorumNetwork,
+    whisper.AddEnodeRequestHandler,
     whisper.AddEnodeResponseHandler
   );
 
   var result = {
+    localIpAddress: localIpAddress,
     folders: ['Blockchain', 'Constellation'],
     constellationKeySetup: [
       {folderName: 'Constellation', fileName: 'node'},
@@ -199,11 +201,12 @@ function reconnectToQuorumNetwork(communicationNetwork, cb){
     startQuorumParticipantNode,
     createWeb3Connection,
     listenForNewEnodes,
-    getEnodeForQuorumNetwork,
+    whisper.AddEnodeRequestHandler,
     whisper.AddEnodeResponseHandler
   );
 
   var result = {
+    localIpAddress: localIpAddress,
     folders: ['Blockchain', 'Constellation'],
     constellationKeySetup: [
       {folderName: 'Constellation', fileName: 'node'},
@@ -257,7 +260,7 @@ function handleJoiningExistingQuorumNetwork(cb){
     + 'please enter the ip address of one of the managing nodes');
   prompt.get(['ipAddress'], function (err, network) {
     remoteIpAddress = network.ipAddress;
-    whisper.JoinNetwork(function(err, result){
+    whisper.JoinNetwork(remoteIpAddress, function(err, result){
       if (err) { return onErr(err); }
       communicationNetwork = Object.assign({}, result);
       result = null;
@@ -276,7 +279,7 @@ function handleReconnectingToQuorumNetwork(cb){
     + 'please enter the ip address of one of the managing nodes');
   prompt.get(['ipAddress'], function (err, network) {
     remoteIpAddress = network.ipAddress;
-    whisper.JoinNetwork(function(err, result){
+    whisper.JoinNetwork(remoteIpAddress, function(err, result){
       if (err) { return onErr(err); }
       communicationNetwork = Object.assign({}, result);
       result = null;

@@ -20,7 +20,7 @@ function addEnodeResponseHandler(result, cb){
       web3IPC.admin.nodeInfo(function(err, nodeInfo){
         if(err){console.log('ERROR:', err);}
         var enodeResponse = 'response|enode'+nodeInfo.enode;
-        enodeResponse = enodeResponse.replace('\[\:\:\]', localIpAddress);
+        enodeResponse = enodeResponse.replace('\[\:\:\]', result.localIpAddress);
         var hexString = new Buffer(enodeResponse).toString('hex');        
         commWeb3RPC.shh.post({
           "topics": ["Enode"],
@@ -38,7 +38,7 @@ function addEnodeResponseHandler(result, cb){
 
 // TODO: Add to and from fields to validate origins & only respond to others requests
 // TODO: Test assumption that we want to connect to all nodes that respond with enodes
-function getEnodeForQuorumNetwork(result, cb){
+function addEnodeRequestHandler(result, cb){
   var comm = result.communicationNetwork;
   var shh = comm.web3RPC.shh;
   
@@ -174,7 +174,7 @@ function startCommunicationNetwork(cb){
   });
 }
 
-function joinCommunicationNetwork(cb){
+function joinCommunicationNetwork(remoteIpAddress, cb){
   console.log('[*] Joining communication network...');
   var seqFunction = async.seq(
     util.ClearDirectories,
@@ -201,4 +201,6 @@ function joinCommunicationNetwork(cb){
 
 exports.StartNetwork = startCommunicationNetwork;
 exports.AddEnodeResponseHandler = addEnodeResponseHandler;
+exports.AddEnodeRequestHandler = addEnodeRequestHandler;
 exports.JoinNetwork = joinCommunicationNetwork;
+exports.GetGenesisBlockConfig = getGenesisBlockConfig;
