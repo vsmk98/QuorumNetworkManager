@@ -199,7 +199,7 @@ function reconnectToQuorumNetwork(communicationNetwork, cb){
   
   var seqFunction = async.seq(
     startQuorumParticipantNode,
-    createWeb3Connection,
+    util.CreateWeb3Connection,
     listenForNewEnodes,
     whisper.AddEnodeRequestHandler,
     whisper.AddEnodeResponseHandler
