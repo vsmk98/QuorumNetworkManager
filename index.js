@@ -2,7 +2,6 @@ var exec = require('child_process').exec;
 var fs = require('fs');
 var async = require('async');
 var prompt = require('prompt');
-var bigNumber = require('big-number');
 
 var util = require('./util.js');
 var events = require('./eventEmitter.js');
