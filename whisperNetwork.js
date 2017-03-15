@@ -7,6 +7,22 @@ var util = require('./util.js');
 
 // TODO: Maybe check that address is indeed in need of some ether before sending it some
 // TODO: Check from which address to send the ether, for now this defaults to eth.accounts[0]
+function requestSomeEther(commWeb3RPC, address, cb){
+  var message = 'request|ether|'+address;
+  var hexString = new Buffer(message).toString('hex');        
+  commWeb3RPC.shh.post({
+    "topics": ["Ether"],
+    "payload": hexString,
+    "ttl": 10,
+    "workToProve": 1
+  }, function(err, res){
+    if(err){console.log('err', err);}
+    cb();
+  });
+}
+
+// TODO: Maybe check that address is indeed in need of some ether before sending it some
+// TODO: Check from which address to send the ether, for now this defaults to eth.accounts[0]
 function addEtherResponseHandler(result, cb){
   var web3RPC = result.web3RPC;
   var commWeb3RPC = result.communicationNetwork.web3RPC;
@@ -232,3 +248,4 @@ exports.AddEnodeResponseHandler = addEnodeResponseHandler;
 exports.AddEnodeRequestHandler = addEnodeRequestHandler;
 exports.JoinNetwork = joinCommunicationNetwork;
 exports.GetGenesisBlockConfig = getGenesisBlockConfig;
+exports.RequestSomeEther = requestSomeEther;
