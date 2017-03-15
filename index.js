@@ -2,6 +2,7 @@ var exec = require('child_process').exec;
 var fs = require('fs');
 var async = require('async');
 var prompt = require('prompt');
+var bigNumber = require('big-number');
 
 var util = require('./util.js');
 var events = require('./eventEmitter.js');
@@ -100,17 +101,20 @@ function startQuorumParticipantNode(result, cb){
   });
 }
 
+
 function getAllBalancesForThisNode(result, cb){
   var thresholdBalance = 0.1;
 
+  var commWeb3RPC = result.communicationNetwork.web3RPC;
   var web3RPC = result.web3RPC;
   var accounts = web3RPC.eth.accounts;
   for(var i in accounts){
     var account = accounts[i];
-    console.log('account:', account);
-    var balance = web3RPC.eth.getBalance(account);
-    console.log('balance:', balance);
+    var balance = web3RPC.fromWei(web3RPC.eth.getBalance(account).toString(), 'ether');
     // if balance is below threshold, request topup
+    if(balance < thresholdBalance){
+      whisper.RequestSomeEther(commWeb3RPC, account, function(){}); 
+    }    
   }
   
   cb();
