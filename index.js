@@ -100,6 +100,30 @@ function startQuorumParticipantNode(result, cb){
   });
 }
 
+function getAllBalancesForThisNode(result, cb){
+  var thresholdBalance = 0.1;
+
+  var web3RPC = result.web3RPC;
+  var accounts = web3RPC.eth.accounts;
+  for(var i in accounts){
+    var account = accounts[i];
+    console.log('account:', account);
+    var balance = web3RPC.eth.getBalance(account);
+    console.log('balance:', balance);
+    // if balance is below threshold, request topup
+  }
+  
+  cb();
+}
+
+function monitorAccountBalances(result, cb){
+  var web3RPC = result.web3RPC;
+  web3RPC.eth.filter("latest", function(err, block) { 
+    getAllBalancesForThisNode(result, function(){ }); 
+  });
+  cb(null, result);
+}
+
 function startNewQuorumNetwork(communicationNetwork, cb){
   console.log('[*] Starting new network...');
   
@@ -115,7 +139,8 @@ function startNewQuorumNetwork(communicationNetwork, cb){
     startQuorumNode,
     util.CreateWeb3Connection,
     whisper.AddEnodeResponseHandler,
-    listenForNewEnodes
+    listenForNewEnodes,
+    whisper.AddEtherResponseHandler
   );
 
   var result = {
@@ -161,7 +186,8 @@ function joinQuorumNetwork(communicationNetwork, cb){
     util.CreateWeb3Connection,
     listenForNewEnodes,
     whisper.AddEnodeRequestHandler,
-    whisper.AddEnodeResponseHandler
+    whisper.AddEnodeResponseHandler,
+    monitorAccountBalances
   );
 
   var result = {
@@ -202,7 +228,8 @@ function reconnectToQuorumNetwork(communicationNetwork, cb){
     util.CreateWeb3Connection,
     listenForNewEnodes,
     whisper.AddEnodeRequestHandler,
-    whisper.AddEnodeResponseHandler
+    whisper.AddEnodeResponseHandler,
+    monitorAccountBalances
   );
 
   var result = {

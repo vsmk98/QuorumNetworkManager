@@ -5,6 +5,32 @@ var async = require('async');
 var events = require('./eventEmitter.js');
 var util = require('./util.js');
 
+// TODO: Maybe check that address is indeed in need of some ether before sending it some
+// TODO: Check from which address to send the ether, for now this defaults to eth.accounts[0]
+function addEtherResponseHandler(result, cb){
+  var web3RPC = result.web3RPC;
+  var commWeb3RPC = result.communicationNetwork.web3RPC;
+  commWeb3RPC.shh.filter({"topics":["Ether"]}).watch(function(err, msg) {
+    if(err){console.log("ERROR:", err);};
+    var message = util.Hex2a(msg.payload);
+    if(message.indexOf('request|ether|') >= 0){
+      var address = message.replace('request|ether|');
+      
+      var transaction = {
+        from: web3RPC.eth.accounts[0],
+        to: address,
+        value: web3.toWei(1, 'ether')
+      };
+      console.log('transaction:', transaction);
+      web3RPC.eth.sendTransaction(transaction, function(err, res){
+        if(err){console.log('err', err);}
+        console.log('addEnodeResponseHandler:', res);
+      });
+    }
+  });
+  cb(null, result);
+}
+
 // TODO: Add to and from fields to validate origins & only respond to others requests
 // TODO: Add check whether requester has correct permissions
 // This will broadcast this node's enode to any 'request|enode' message
@@ -200,6 +226,7 @@ function joinCommunicationNetwork(remoteIpAddress, cb){
 
 
 exports.StartNetwork = startCommunicationNetwork;
+exports.AddEtherResponseHandler = addEtherResponseHandler;
 exports.AddEnodeResponseHandler = addEnodeResponseHandler;
 exports.AddEnodeRequestHandler = addEnodeRequestHandler;
 exports.JoinNetwork = joinCommunicationNetwork;
