@@ -12,14 +12,15 @@ function addEtherResponseHandler(result, cb){
   var commWeb3RPC = result.communicationNetwork.web3RPC;
   commWeb3RPC.shh.filter({"topics":["Ether"]}).watch(function(err, msg) {
     if(err){console.log("ERROR:", err);};
+    console.log('Received message with topic Ether');
     var message = util.Hex2a(msg.payload);
     if(message.indexOf('request|ether|') >= 0){
-      var address = message.replace('request|ether|');
+      var address = message.substring('request|ether|'.length+1);
       
       var transaction = {
         from: web3RPC.eth.accounts[0],
         to: address,
-        value: web3.toWei(1, 'ether')
+        value: web3RPC.toWei(1, 'ether')
       };
       console.log('transaction:', transaction);
       web3RPC.eth.sendTransaction(transaction, function(err, res){
