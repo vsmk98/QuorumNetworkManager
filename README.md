@@ -9,6 +9,16 @@ This project aims to make creating Quorum networks easy.
 2. Ubuntu 16.04 (this has to do with Constellation)
 3. NodeJS v4.5+ (tested on v4.8.0) (https://nodejs.org/en/download/package-manager/)
 
+## Installing Ethereum		
+ 		
+ NOTE1: There seems to be a problem with web3 if we don't install ethereum, we still need to find the exact package
+ web3 is missing and simply install that package instead.
+  		
+ 1. `sudo apt-get install software-properties-common`		
+ 2. `sudo add-apt-repository -y ppa:ethereum/ethereum`		
+ 3. `sudo apt-get update`		
+ 4. `sudo apt-get install ethereum`
+
 ## Installing Quorum
 
 NOTE1: We will need to use Quorum's geth, so do a `sudo mv /usr/bin/geth /usr/bin/normalGeth`
