@@ -1,5 +1,7 @@
 var async = require('async');
 var util = require('./util.js');
+var count = 0;
+var startTime = new Date().getTime();
 
 function startSubmittingTransactions(){
   var seqFunction = async.seq(
@@ -18,26 +20,41 @@ function startSubmittingTransactions(){
     var account1 = res.addressList[0];
 
     setInterval(function(){
-      var tx = {
+      var txObj = {
         from: web3RPC.eth.accounts[0],
         to: account1,
         value: 1
       };
-      web3RPC.eth.sendTransaction(tx, function(err, res){
+      web3IPC.eth.sendTransaction(txObj, function(err, txHash){
         if (err) { console.log('Send transaction ERROR:', err); }
+        setTimeout(function(){
+          web3IPC.eth.getTransaction(txHash, function(err, tx){
+            if (err) { console.log('Get transaction ERROR:', err); }
+            if(tx == undefined || tx.blockNumber == null){
+              console.log('Tx not included in block:', txHash);
+            } else {
+              count++;
+            }
+          });          
+        }, 3000);
       });
     }, 1000);
   });
 }
 
 function run(){
-  for(var i =0; i < 10; i++){
-    var timeout = Math.floor(Math.random()*20*1000);
-    console.log('timeout:', timeout);
+  for(var i = 0; i < 3; i++){
+    var timeout = Math.floor(Math.random()*10*1000);
     setTimeout(function(){
       startSubmittingTransactions()
     }, timeout);
   }
+
+  setInterval(function(){
+    var elapsedTime = new Date().getTime() - startTime;
+    console.log('Confirmed transactions:', count);
+    console.log('Confirmed tx/s', (count/(elapsedTime/1000)).toFixed(2)); 
+  }, 10*1000);
 }
 
 
