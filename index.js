@@ -19,30 +19,6 @@ function listenForNewEnodes(result, cb){
   cb(null, result);
 }
 
-function getNewGethAccount(result, cb){
-  var options = {encoding: 'utf8', timeout: 10*1000};
-  var child = exec('geth --datadir Blockchain account new', options);
-  child.stdout.on('data', function(data){
-    if(data.indexOf('Your new account') >= 0){
-      child.stdin.write('\n');
-    } else if(data.indexOf('Repeat') >= 0){
-      child.stdin.write('\n');
-    } else if(data.indexOf('Address') == 0){
-      var index = data.indexOf('{');
-      var address = '0x'+data.substring(index+1, data.length-2);
-      if(result.addressList == undefined){
-        result.addressList = [];
-      }
-      result.addressList.push(address);
-      cb(null, result);
-    } 
-  });
-  child.stderr.on('data', function(error){
-    console.log('ERROR:', error);
-    cb(error, null);
-  });
-}
-
 function createQuorumConfig(result, cb){
   console.log('creating genesis config...');
   var options = {encoding: 'utf8', timeout: 100*1000};
@@ -136,8 +112,8 @@ function startNewQuorumNetwork(communicationNetwork, cb){
     util.CreateDirectories,
     constellation.CreateNewKeys, 
     constellation.CreateConfig,
-    getNewGethAccount,
-    getNewGethAccount,
+    util.GetNewGethAccount,
+    util.GetNewGethAccount,
     createQuorumConfig,
     createGenesisBlockConfig,
     startQuorumNode,
