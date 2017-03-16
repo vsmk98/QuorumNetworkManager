@@ -7,6 +7,7 @@ var util = require('./util.js');
 var events = require('./eventEmitter.js');
 var whisper = require('./whisperNetwork.js');
 var constellation = require('./constellation.js');
+var statistics = require('./networkStatistics.js');
 
 function listenForNewEnodes(result, cb){
   var web3IPC = result.web3IPC;
@@ -143,7 +144,8 @@ function startNewQuorumNetwork(communicationNetwork, cb){
     util.CreateWeb3Connection,
     whisper.AddEnodeResponseHandler,
     listenForNewEnodes,
-    whisper.AddEtherResponseHandler
+    whisper.AddEtherResponseHandler,
+    statistics.Start
   );
 
   var result = {
@@ -190,7 +192,8 @@ function joinQuorumNetwork(communicationNetwork, cb){
     listenForNewEnodes,
     whisper.AddEnodeRequestHandler,
     whisper.AddEnodeResponseHandler,
-    monitorAccountBalances
+    monitorAccountBalances,
+    statistics.Start
   );
 
   var result = {
@@ -232,7 +235,8 @@ function reconnectToQuorumNetwork(communicationNetwork, cb){
     listenForNewEnodes,
     whisper.AddEnodeRequestHandler,
     whisper.AddEnodeResponseHandler,
-    monitorAccountBalances
+    monitorAccountBalances,
+    statistics.Start
   );
 
   var result = {
@@ -321,7 +325,6 @@ function handleReconnectingToQuorumNetwork(cb){
       }); 
     });      
   });  
-
 }
 
 function mainLoop(){
@@ -330,7 +333,8 @@ function mainLoop(){
     console.log('1) Start a new Quorum network [WARNING: this clears everything]');
     console.log('2) Join an existing Quorum network, first time joining this network. [WARNING: this clears everything]');
     console.log('3) Reconnect to the previously connected network');
-    console.log('4) killall geth constellation-node');
+    console.log('4) Display network statistics');
+    console.log('5) killall geth constellation-node');
     console.log('0) Quit');
     prompt.get(['option'], function (err, result) {
       if (err) { return onErr(err); }
@@ -347,6 +351,9 @@ function mainLoop(){
           mainLoop();
         });
       } else if(result.option == 4){
+        statistics.PrintBlockStatistics();
+        mainLoop();
+      } else if(result.option == 5){
         util.KillallGethConstellationNode(function(err, result){
           if (err) { return onErr(err); }
           quorumNetwork = null;
