@@ -26,8 +26,19 @@ function startSubmittingTransactions(){
       web3RPC.eth.sendTransaction(tx, function(err, res){
         if (err) { console.log('Send transaction ERROR:', err); }
       });
-    }, 500);
+    }, 1000);
   });
 }
 
-startSubmittingTransactions();
+function run(){
+  for(var i =0; i < 10; i++){
+    var timeout = Math.floor(Math.random()*20*1000);
+    console.log('timeout:', timeout);
+    setTimeout(function(){
+      startSubmittingTransactions()
+    }, timeout);
+  }
+}
+
+
+run();
