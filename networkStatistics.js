@@ -5,13 +5,15 @@ function start(result, cb){
   web3RPC.eth.filter("latest", function(err, blockHash) { 
     web3RPC.eth.getBlock(blockHash, function(err, block){
       if(err){console.log('err:', err)}
-      blockList.push({
-        gasLimit: block.gasLimit,
-        gasUsed: block.gasUsed,
-        nrOfTransactions: block.transactions.length,
-        blockTimeStamp: block.timestamp*1000,
-        timestamp: new Date().getTime()
-      });
+      if(block){
+        blockList.push({
+          gasLimit: block.gasLimit,
+          gasUsed: block.gasUsed,
+          nrOfTransactions: block.transactions.length,
+          blockTimeStamp: block.timestamp*1000,
+          timestamp: new Date().getTime()
+        });
+      };
     });
   });
   cb(null, result);
