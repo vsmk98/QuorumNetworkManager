@@ -43,7 +43,7 @@ source ~/.bashrc;
 cd ..;
 git clone https://github.com/davebryson/quorum-genesis.git;
 cd quorum-genesis/;
-npm install -g;
+sudo npm install -g;
 
 cd ..;
 git clone https://github.com/coeniebeyers/QuorumNetworkManager.git;
