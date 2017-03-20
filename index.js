@@ -7,6 +7,7 @@ var util = require('./util.js');
 var events = require('./eventEmitter.js');
 var whisper = require('./whisperNetwork.js');
 var constellation = require('./constellation.js');
+var statistics = require('./networkStatistics.js');
 
 function listenForNewEnodes(result, cb){
   var web3IPC = result.web3IPC;
@@ -16,30 +17,6 @@ function listenForNewEnodes(result, cb){
     });
   });
   cb(null, result);
-}
-
-function getNewGethAccount(result, cb){
-  var options = {encoding: 'utf8', timeout: 10*1000};
-  var child = exec('geth --datadir Blockchain account new', options);
-  child.stdout.on('data', function(data){
-    if(data.indexOf('Your new account') >= 0){
-      child.stdin.write('\n');
-    } else if(data.indexOf('Repeat') >= 0){
-      child.stdin.write('\n');
-    } else if(data.indexOf('Address') == 0){
-      var index = data.indexOf('{');
-      var address = '0x'+data.substring(index+1, data.length-2);
-      if(result.addressList == undefined){
-        result.addressList = [];
-      }
-      result.addressList.push(address);
-      cb(null, result);
-    } 
-  });
-  child.stderr.on('data', function(error){
-    console.log('ERROR:', error);
-    cb(error, null);
-  });
 }
 
 function createQuorumConfig(result, cb){
@@ -100,6 +77,33 @@ function startQuorumParticipantNode(result, cb){
   });
 }
 
+
+function getAllBalancesForThisNode(result, cb){
+  var thresholdBalance = 0.1;
+
+  var commWeb3RPC = result.communicationNetwork.web3RPC;
+  var web3RPC = result.web3RPC;
+  var accounts = web3RPC.eth.accounts;
+  for(var i in accounts){
+    var account = accounts[i];
+    var balance = web3RPC.fromWei(web3RPC.eth.getBalance(account).toString(), 'ether');
+    // if balance is below threshold, request topup
+    if(balance < thresholdBalance){
+      whisper.RequestSomeEther(commWeb3RPC, account, function(){}); 
+    }    
+  }
+  
+  cb();
+}
+
+function monitorAccountBalances(result, cb){
+  var web3RPC = result.web3RPC;
+  web3RPC.eth.filter("latest", function(err, block) { 
+    getAllBalancesForThisNode(result, function(){ }); 
+  });
+  cb(null, result);
+}
+
 function startNewQuorumNetwork(communicationNetwork, cb){
   console.log('[*] Starting new network...');
   
@@ -108,14 +112,16 @@ function startNewQuorumNetwork(communicationNetwork, cb){
     util.CreateDirectories,
     constellation.CreateNewKeys, 
     constellation.CreateConfig,
-    getNewGethAccount,
-    getNewGethAccount,
+    util.GetNewGethAccount,
+    util.GetNewGethAccount,
     createQuorumConfig,
     createGenesisBlockConfig,
     startQuorumNode,
     util.CreateWeb3Connection,
     whisper.AddEnodeResponseHandler,
-    listenForNewEnodes
+    listenForNewEnodes,
+    whisper.AddEtherResponseHandler,
+    statistics.Start
   );
 
   var result = {
@@ -161,7 +167,9 @@ function joinQuorumNetwork(communicationNetwork, cb){
     util.CreateWeb3Connection,
     listenForNewEnodes,
     whisper.AddEnodeRequestHandler,
-    whisper.AddEnodeResponseHandler
+    whisper.AddEnodeResponseHandler,
+    monitorAccountBalances,
+    statistics.Start
   );
 
   var result = {
@@ -202,7 +210,9 @@ function reconnectToQuorumNetwork(communicationNetwork, cb){
     util.CreateWeb3Connection,
     listenForNewEnodes,
     whisper.AddEnodeRequestHandler,
-    whisper.AddEnodeResponseHandler
+    whisper.AddEnodeResponseHandler,
+    monitorAccountBalances,
+    statistics.Start
   );
 
   var result = {
@@ -291,7 +301,6 @@ function handleReconnectingToQuorumNetwork(cb){
       }); 
     });      
   });  
-
 }
 
 function mainLoop(){
@@ -300,7 +309,8 @@ function mainLoop(){
     console.log('1) Start a new Quorum network [WARNING: this clears everything]');
     console.log('2) Join an existing Quorum network, first time joining this network. [WARNING: this clears everything]');
     console.log('3) Reconnect to the previously connected network');
-    console.log('4) killall geth constellation-node');
+    console.log('4) Display network statistics');
+    console.log('5) killall geth constellation-node');
     console.log('0) Quit');
     prompt.get(['option'], function (err, result) {
       if (err) { return onErr(err); }
@@ -317,6 +327,9 @@ function mainLoop(){
           mainLoop();
         });
       } else if(result.option == 4){
+        statistics.PrintBlockStatistics();
+        mainLoop();
+      } else if(result.option == 5){
         util.KillallGethConstellationNode(function(err, result){
           if (err) { return onErr(err); }
           quorumNetwork = null;

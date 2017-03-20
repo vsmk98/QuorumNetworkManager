@@ -82,9 +82,34 @@ function connectToPeer(result, cb){
   });
 }
 
+function getNewGethAccount(result, cb){
+  var options = {encoding: 'utf8', timeout: 10*1000};
+  var child = exec('geth --datadir Blockchain account new', options);
+  child.stdout.on('data', function(data){
+    if(data.indexOf('Your new account') >= 0){
+      child.stdin.write('\n');
+    } else if(data.indexOf('Repeat') >= 0){
+      child.stdin.write('\n');
+    } else if(data.indexOf('Address') == 0){
+      var index = data.indexOf('{');
+      var address = '0x'+data.substring(index+1, data.length-2);
+      if(result.addressList == undefined){
+        result.addressList = [];
+      }
+      result.addressList.push(address);
+      cb(null, result);
+    } 
+  });
+  child.stderr.on('data', function(error){
+    console.log('ERROR:', error);
+    cb(error, null);
+  });
+}
+
 exports.Hex2a = hex2a;
 exports.ClearDirectories = clearDirectories;
 exports.CreateDirectories = createDirectories;
 exports.CreateWeb3Connection = createWeb3Connection;
 exports.ConnectToPeer = connectToPeer;
 exports.KillallGethConstellationNode = killallGethConstellationNode;
+exports.GetNewGethAccount = getNewGethAccount;
