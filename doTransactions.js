@@ -40,9 +40,9 @@ function startSubmittingTransactions(){
               confirmedCount++;
             }
           });          
-        }, 3000);
+        }, 5000);
       });
-    }, 20);
+    }, 25);
   });
 }
 
