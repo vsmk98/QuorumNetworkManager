@@ -121,7 +121,7 @@ function startNewQuorumNetwork(communicationNetwork, cb){
     whisper.AddEnodeResponseHandler,
     listenForNewEnodes,
     whisper.AddEtherResponseHandler,
-    statistics.Start
+    statistics.Setup
   );
 
   var result = {
@@ -169,7 +169,7 @@ function joinQuorumNetwork(communicationNetwork, cb){
     whisper.AddEnodeRequestHandler,
     whisper.AddEnodeResponseHandler,
     monitorAccountBalances,
-    statistics.Start
+    statistics.Setup
   );
 
   var result = {
@@ -212,7 +212,7 @@ function reconnectToQuorumNetwork(communicationNetwork, cb){
     whisper.AddEnodeRequestHandler,
     whisper.AddEnodeResponseHandler,
     monitorAccountBalances,
-    statistics.Start
+    statistics.Setup
   );
 
   var result = {
@@ -303,13 +303,18 @@ function handleReconnectingToQuorumNetwork(cb){
   });  
 }
 
+var networkStatisticsEnabled = false;
 function mainLoop(){
   if(localIpAddress){
     console.log('Please select an option below:');
     console.log('1) Start a new Quorum network [WARNING: this clears everything]');
     console.log('2) Join an existing Quorum network, first time joining this network. [WARNING: this clears everything]');
     console.log('3) Reconnect to the previously connected network');
-    console.log('4) Display network statistics');
+    if(networkStatisticsEnabled){
+      console.log('4) Display network statistics');
+    } else {
+      console.log('4) Enable network statistics');
+    }
     console.log('5) killall geth constellation-node');
     console.log('0) Quit');
     prompt.get(['option'], function (err, result) {
@@ -326,7 +331,11 @@ function mainLoop(){
         handleReconnectingToQuorumNetwork(function(){
           mainLoop();
         });
-      } else if(result.option == 4){
+      } else if(networkStatisticsEnabled == false && result.option == 4){
+        statistics.Enable();
+        networkStatisticsEnabled = true;
+        mainLoop();
+      } else if(networkStatisticsEnabled == true && result.option == 4){
         statistics.PrintBlockStatistics();
         mainLoop();
       } else if(result.option == 5){
