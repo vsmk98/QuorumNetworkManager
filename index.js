@@ -100,7 +100,7 @@ function monitorAccountBalances(result, cb){
   var web3RPC = result.web3RPC;
   setInterval(function(){
     var syncing = web3RPC.eth.syncing;
-    if(!syncing){
+    if(syncing === false){
       getAllBalancesForThisNode(result, function(){ }); 
     }
   }, 5*1000);
