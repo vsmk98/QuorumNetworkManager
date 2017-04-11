@@ -99,9 +99,13 @@ function getAllBalancesForThisNode(result, cb){
 function monitorAccountBalances(result, cb){
   var web3RPC = result.web3RPC;
   setInterval(function(){
-    var syncing = web3RPC.eth.syncing;
-    if(syncing === false){
-      getAllBalancesForThisNode(result, function(){ }); 
+    var syncing = true;
+    try{
+      syncing = web3RPC.eth.syncing;
+    } finally{
+      if(syncing === false){
+        getAllBalancesForThisNode(result, function(){ }); 
+      }
     }
   }, 5*1000);
   /*web3RPC.eth.filter("latest", function(err, block) { 
