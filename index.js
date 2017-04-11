@@ -98,27 +98,9 @@ function getAllBalancesForThisNode(result, cb){
 
 function monitorAccountBalances(result, cb){
   var web3RPC = result.web3RPC;
-  var synced = false;
   setInterval(function(){
-    if(synced === true){
-      getAllBalancesForThisNode(result, function(){ }); 
-    }
-    try{
-      web3RPC.eth.isSyncing(function(err, syncing){
-        if(err){console.log('ERROR:', err);}
-        if(syncing && syncing.currentBlock && syncing.highestBlock){
-          synced = false;
-        } else if(!synced){
-          synced = true;
-          console.log('[*] Blockchain synced!');
-        }
-      });
-    } catch(e){
-      console.log('ERROR:', e);
-    }
+    getAllBalancesForThisNode(result, function(){ }); 
   }, 5*1000);
-  /*web3RPC.eth.filter("latest", function(err, block) { 
-  });*/
   cb(null, result);
 }
 
