@@ -77,28 +77,51 @@ function startQuorumParticipantNode(result, cb){
   });
 }
 
+function accountDiff(arrayA, arrayB){
+  var arrayC = []
+  for(var i in arrayA){
+    var itemA = arrayA[i]
+    var found = false
+    for(var j in arrayB){
+      var itemB = arrayB[j]
+      if(itemA === itemB){
+        found = true
+      }
+    }
+    if(found === false){
+      arrayC.push(itemA)
+    }
+  }
+  return arrayC
+}
 
+var processedAccounts = []
 function getAllBalancesForThisNode(result, cb){
   var thresholdBalance = 0.1;
 
   var commWeb3RPC = result.communicationNetwork.web3RPC;
   var web3RPC = result.web3RPC;
-  var accounts = web3RPC.eth.accounts;
+  var accounts = accountDiff(web3RPC.eth.accounts, processedAccounts)
+
+  console.log('Running through accounts:', accounts) 
+ 
   for(var i in accounts){
     var account = accounts[i];
     var balance = web3RPC.fromWei(web3RPC.eth.getBalance(account).toString(), 'ether');
     // if balance is below threshold, request topup
     if(balance < thresholdBalance){
-      whisper.RequestSomeEther(commWeb3RPC, account, function(){}); 
+      whisper.RequestSomeEther(commWeb3RPC, account, function(){
+        processedAccounts.push(account)
+      })
     }    
   }
-  
-  cb();
+  cb(null, result);
 }
 
 function monitorAccountBalances(result, cb){
   var web3RPC = result.web3RPC;
   setInterval(function(){
+    console.log('Calling getAllBalancesForThisNode')
     getAllBalancesForThisNode(result, function(){ }); 
   }, 5*1000);
   cb(null, result);
@@ -121,6 +144,7 @@ function startNewQuorumNetwork(communicationNetwork, cb){
     whisper.AddEnodeResponseHandler,
     listenForNewEnodes,
     whisper.AddEtherResponseHandler,
+    //monitorAccountBalances,
     statistics.Setup
   );
 
