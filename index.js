@@ -103,8 +103,6 @@ function getAllBalancesForThisNode(result, cb){
   var web3RPC = result.web3RPC;
   var accounts = accountDiff(web3RPC.eth.accounts, processedAccounts)
 
-  console.log('Running through accounts:', accounts) 
- 
   for(var i in accounts){
     var account = accounts[i];
     var balance = web3RPC.fromWei(web3RPC.eth.getBalance(account).toString(), 'ether');
@@ -121,7 +119,6 @@ function getAllBalancesForThisNode(result, cb){
 function monitorAccountBalances(result, cb){
   var web3RPC = result.web3RPC;
   setInterval(function(){
-    console.log('Calling getAllBalancesForThisNode')
     getAllBalancesForThisNode(result, function(){ }); 
   }, 5*1000);
   cb(null, result);
@@ -144,7 +141,7 @@ function startNewQuorumNetwork(communicationNetwork, cb){
     whisper.AddEnodeResponseHandler,
     listenForNewEnodes,
     whisper.AddEtherResponseHandler,
-    //monitorAccountBalances,
+    monitorAccountBalances,
     statistics.Setup
   );
 
