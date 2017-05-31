@@ -10,8 +10,8 @@ This project aims to make creating Quorum networks easy.
 ## Requirements
 
 1. go 1.7.3/4/5 (this has to do with go-ethereum not working with go 1.8)
-2. Ubuntu 16.04 (this has to do with Constellation)
-3. NodeJS v4.5+ (tested on v4.8.0) (https://nodejs.org/en/download/package-manager/)
+2. Ubuntu 16.04 (this has to do with installing Constellation)
+3. NodeJS v7.10.0+ (tested on v7.10.0) (refer to https://nodejs.org/en/download/package-manager/ for installation)
 
 ## Installing Ethereum		
  		
