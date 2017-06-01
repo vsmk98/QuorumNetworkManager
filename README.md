@@ -35,6 +35,27 @@ To pause blockmaking on the network, the following only needs to be done on the 
 
 # Getting started
 
+There are two options to getting started, manually following the below steps (starting at Requirements) or running a script. In summary, both will create the following directory structure:
+
+```
+workspace
+  quorum
+  quorum-genesis
+  constellation
+  QuorumNetworkManager
+  ...
+```
+
+## Running the script
+
+This script `setup.sh` needs to be run from the folder where you want the QuorumNetworkManager to be installed, like your workspace:
+
+1. `wget https://raw.githubusercontent.com/ConsenSys/QuorumNetworkManager/master/setup.sh`
+2. `chmod +x setup.sh`
+3. `./setup.sh`
+
+This will install all the requirements as well as all the below getting started steps
+
 ## Requirements
 
 1. go 1.7.3/4/5 (this has to do with go-ethereum not working with go 1.8) - https://golang.org/dl/
