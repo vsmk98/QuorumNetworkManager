@@ -96,6 +96,10 @@ NOTE: the public-key (use ssh-keygen to generate one) of the machine you are wor
 2. `cd QuorumNetworkManager`
 3. `npm install`
 
+## Running
+
+Start the QuorumNetworkManager by running `node index.js`. 
+
 # Performance analysis
 
 For the purpose of this project, several tools have been added to assist in determining whether certain use cases are appropriate w.r.t necessary performance.
