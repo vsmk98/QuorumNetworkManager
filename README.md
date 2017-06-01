@@ -1,9 +1,37 @@
-This project aims to make creating Quorum networks easy.
-
 # Contents
 
-1. Getting started
-2. Performance analysis
+1. Introduction & Additional functionality
+2. Getting started
+3. Performance analysis
+
+# Introduction & Additional functionality
+
+This project's goal is to help getting started with a basic Quorum network. Note that this project is still in its early days and as such, it is not production ready and is very limited in functionality. 
+
+Additional functionnality includes (but is not limited to) options regarding adding more blockmakers and voters, using a different consensus mechanism (e.g. switching to raft) as well as performance testing.
+
+## Network topology
+
+It creates a network with 1 block maker + block voter (on the same node) and then allows multiple participant nodes to join.
+
+## Account management
+
+New accounts that are created via `geth` with automatically be seeded with some ether. This is acheived with a whisper message that requests ether from other nodes and as such can easily be extended to work for accounts that are not created via `geth`.
+
+## Constellation - privacy/confidentiality
+
+Nodes in the network will automatically generate constellation keys and broadcast the public key using whisper. This means that this network supports the privacy/confidentiality features of Quorum
+
+## Pausing block making
+
+There is a script `pauseBlockMaking.js` that will pause the blockmaker if no transactions are present. Depending on the use/test case this can greatly aid in node syncing times. Unfortunately there is currently a bug with`--preload` so this script can't be loaded automatically. Here is a workaround:
+
+To pause blockmaking on the network, the following only needs to be done on the node that is acting as the blockmaker:
+
+1. The terminal session that runs the below steps needs to stay open. To help with this, start a new screen (`sudo apt-get install screen` and `screen -S pauseBlockMaker`). 
+2. Run `./attachToLocalQuorumNode.sh` (after the node is started) to connect to the node.
+3. Run `loadScript('pauseBlockMaking.js')`. This should print `-------------loaded pause Blockmaker script`.
+4. Detach from the screen (`Ctrl + a + d`, while pressing `Ctrl` first press `a` and then press `d`)
 
 # Getting started
 
@@ -72,26 +100,14 @@ NOTE: the public-key (use ssh-keygen to generate one) of the machine you are wor
 
 For the purpose of this project, several tools have been added to assist in determining whether certain use cases are appropriate w.r.t necessary performance.
 
-To properly understand the below metrics, users should familiarise themselves with `gas` and `gas limit` and what exactly they represent.   
-
 ## Main script (index.js)
 
 Running the main `index.js` script has an option to display the network usage by means of:
-1. transactions per second (tx/s),
-2. gas usage per second,
-3. maximum gas per second
+1. transactions per second (tx/s)
 
 ### Transactions per second
 
 This is a simple measurement of how many transaction occurred over an intervals, divided by that interval. E.g. for 60 transactions that occurred over 10 seconds, we have 60 transactions/10 seconds to give us 6 transactions per seconds.
-
-### Gas usage per seconds
-
-This takes the total gas used over a interval divided over that interval. E.g. For 10000 gas used over 10 seconds, we have 10000 gas/10 seconds to give us 1000 gas usage per second
-
-### Maximum gas per second
-
-This takes the gaslimit of each block that was processed 
 
 ## doTransactions.js
 
