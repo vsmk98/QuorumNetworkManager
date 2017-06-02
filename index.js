@@ -8,7 +8,6 @@ var events = require('./eventEmitter.js');
 var whisper = require('./whisperNetwork.js');
 var constellation = require('./constellation.js');
 var statistics = require('./networkStatistics.js');
-var chainBuilder = require('./chainBuilder.js')
 
 prompt.start();
 var quorumNetwork = null;
@@ -345,11 +344,6 @@ function mainLoop(){
       console.log('4) Enable network statistics');
     }
     console.log('5) killall geth constellation-node');
-    if(quorumNetwork){
-      console.log('Advanced setup')
-      console.log('6) Add block maker by address')
-      console.log('7) Add block voter by address')
-    }
     console.log('0) Quit');
     prompt.get(['option'], function (err, result) {
       if (err) { return onErr(err); }
@@ -379,15 +373,7 @@ function mainLoop(){
           communicationNetwork = null;
           mainLoop();
         });      
-      } /*else if(quorumNetwork && result.option == 6){ // Add block maker
-        chainBuilder.AddBlockMaker(quorumNetwork, function(){
-          mainLoop()
-        }) 
-      } else if(quorumNetwork && result.option == 7){ // Add block voter
-        chainBuilder.AddBlockVoter(quorumNetwork, function(){
-          mainLoop()
-        }) 
-      }*/ else if(result.option == 0){
+      } else if(result.option == 0){
         console.log('Quiting');
         process.exit(0);
         return;
