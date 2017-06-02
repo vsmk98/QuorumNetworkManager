@@ -7,7 +7,7 @@ geth --datadir Blockchain init quorum-genesis.json &>> /dev/null
 
 NETID=91351
 
-GLOBAL_ARGS="--networkid $NETID --shh --rpc --rpcaddr 0.0.0.0 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum"
+GLOBAL_ARGS="--networkid $NETID --shh --rpc --rpcaddr 0.0.0.0 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum --nodiscover"
 
 nohup constellation-node constellation.config &> constellation.log &
 sleep 5
