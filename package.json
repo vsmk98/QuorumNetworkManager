@@ -19,6 +19,7 @@
   "dependencies": {
     "async": "^2.1.5",
     "prompt": "^1.0.0",
+    "ps-node": "^0.1.6",
     "web3": "^0.18.2",
     "web3_ipc": "^1.4.0"
   }
