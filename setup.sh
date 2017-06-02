@@ -43,6 +43,6 @@ cd quorum-genesis/
 sudo npm install -g
 
 cd ..
-git clone https://github.com/coeniebeyers/QuorumNetworkManager.git
+git clone https://github.com/consensys/QuorumNetworkManager.git
 cd QuorumNetworkManager/
 npm install
