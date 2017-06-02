@@ -28,8 +28,11 @@ function addEtherResponseHandler(result, cb){
   var commWeb3RPC = result.communicationNetwork.web3RPC;
   commWeb3RPC.shh.filter({"topics":["Ether"]}).watch(function(err, msg) {
     if(err){console.log("ERROR:", err);};
-    var message = util.Hex2a(msg.payload);
-    if(message.indexOf('request|ether|') >= 0){
+    var message = null;
+    if(msg && msg.payload){
+      message = util.Hex2a(msg.payload);
+    }
+    if(message && message.indexOf('request|ether|') >= 0){
       var address = message.substring('request|ether|'.length+1);
       
       var transaction = {
@@ -55,8 +58,11 @@ function addEnodeResponseHandler(result, cb){
   var commWeb3IPC = result.communicationNetwork.web3IPC;
   commWeb3RPC.shh.filter({"topics":["Enode"]}).watch(function(err, msg) {
     if(err){console.log("ERROR:", err);};
-    var message = util.Hex2a(msg.payload);
-    if(message.indexOf('request|enode') >= 0){
+    var message = null
+    if(msg && msg.payload){
+      message = util.Hex2a(msg.payload);
+    }
+    if(message && message.indexOf('request|enode') >= 0){
       web3IPC.admin.nodeInfo(function(err, nodeInfo){
         if(err){console.log('ERROR:', err);}
         var enodeResponse = 'response|enode'+nodeInfo.enode;
@@ -96,8 +102,11 @@ function addEnodeRequestHandler(result, cb){
     if(err){console.log('err', err);}
     var filter = shh.filter({"topics":["Enode"]}).watch(function(err, msg) {
       if(err){console.log("ERROR:", err);};
-      var message = util.Hex2a(msg.payload);
-      if(message.indexOf('response|enode') >= 0){
+      var message = null;
+      if(msg && msg.payload){
+        message = util.Hex2a(msg.payload);
+      }
+      if(message && message.indexOf('response|enode') >= 0){
         var enode = message.replace('response|enode', '').substring(1);
         events.emit('newEnode', enode);
       }
@@ -124,8 +133,11 @@ function genesisConfigHandler(result, cb){
   var web3IPC = result.web3IPC;
   web3RPC.shh.filter({"topics":["GenesisConfig"]}).watch(function(err, msg) {
     if(err){console.log("ERROR:", err);};
-    var message = util.Hex2a(msg.payload);
-    if(message.indexOf('request|genesisConfig') >= 0){
+    var message = null;
+    if(msg && msg.payload){
+      message = util.Hex2a(msg.payload);
+    } 
+    if(message && message.indexOf('request|genesisConfig') >= 0){
       fs.readFile('quorum-genesis.json', 'utf8', function(err, data){
         if(err){console.log('ERROR:', err);}   
         var genesisConfig = 'response|genesisConfig'+data;
@@ -162,8 +174,11 @@ function getGenesisBlockConfig(result, cb){
     if(err){console.log('err', err);}
     var filter = shh.filter({"topics":["GenesisConfig"]}).watch(function(err, msg) {
       if(err){console.log("ERROR:", err);};
-      var message = util.Hex2a(msg.payload);
-      if(message.indexOf('response|genesisConfig') >= 0){
+      var message = null;
+      if(msg && msg.payload){
+        message = util.Hex2a(msg.payload);
+      }
+      if(message && message.indexOf('response|genesisConfig') >= 0){
         filter.stopWatching();
         var genesisConfig = message.replace('response|genesisConfig', '').substring(1);
         genesisConfig = genesisConfig.replace(/\\n/g, '');
