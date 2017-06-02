@@ -8,6 +8,14 @@ var events = require('./eventEmitter.js');
 var whisper = require('./whisperNetwork.js');
 var constellation = require('./constellation.js');
 var statistics = require('./networkStatistics.js');
+var chainBuilder = require('./chainBuilder.js')
+
+prompt.start();
+var quorumNetwork = null;
+var communicationNetwork = null;
+var localIpAddress = null;
+var remoteIpAddress = null;
+var checkForOtherProcesses = false;
 
 function listenForNewEnodes(result, cb){
   var web3IPC = result.web3IPC;
@@ -266,12 +274,6 @@ function reconnectToQuorumNetwork(communicationNetwork, cb){
   });
 }
 
-prompt.start();
-var quorumNetwork = null;
-var communicationNetwork = null;
-var localIpAddress = null;
-var remoteIpAddress = null;
-
 function handleStartingNewQuorumNetwork(cb){
   whisper.StartNetwork(function(err, result){
     if (err) { return onErr(err); }
@@ -326,7 +328,13 @@ function handleReconnectingToQuorumNetwork(cb){
 
 var networkStatisticsEnabled = false;
 function mainLoop(){
-  if(localIpAddress){
+  if(localIpAddress && checkForOtherProcesses == false) {
+    util.CheckPreviousCleanExit(function(err, done){
+      if(err) {console.log('ERROR:', err)}
+      checkForOtherProcesses = done
+      mainLoop()
+    })
+  } else if(localIpAddress && checkForOtherProcesses){
     console.log('Please select an option below:');
     console.log('1) Start a new Quorum network [WARNING: this clears everything]');
     console.log('2) Join an existing Quorum network, first time joining this network. [WARNING: this clears everything]');
@@ -337,6 +345,11 @@ function mainLoop(){
       console.log('4) Enable network statistics');
     }
     console.log('5) killall geth constellation-node');
+    if(quorumNetwork){
+      console.log('Advanced setup')
+      console.log('6) Add block maker by address')
+      console.log('7) Add block voter by address')
+    }
     console.log('0) Quit');
     prompt.get(['option'], function (err, result) {
       if (err) { return onErr(err); }
@@ -366,7 +379,15 @@ function mainLoop(){
           communicationNetwork = null;
           mainLoop();
         });      
-      } else if(result.option == 0){
+      } /*else if(quorumNetwork && result.option == 6){ // Add block maker
+        chainBuilder.AddBlockMaker(quorumNetwork, function(){
+          mainLoop()
+        }) 
+      } else if(quorumNetwork && result.option == 7){ // Add block voter
+        chainBuilder.AddBlockVoter(quorumNetwork, function(){
+          mainLoop()
+        }) 
+      }*/ else if(result.option == 0){
         console.log('Quiting');
         process.exit(0);
         return;

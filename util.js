@@ -1,4 +1,6 @@
 var exec = require('child_process').exec;
+var ps = require('ps-node')
+var async = require('async')
 
 function killallGethConstellationNode(cb){
   var cmd = 'killall -9';
@@ -52,6 +54,7 @@ function hex2a(hexx) {
   return str;
 }
 
+// TODO: added error handler here for web3 connections so that program doesn't exit on error
 function createWeb3Connection(result, cb){
   // Web3 IPC
   var host = result.web3IPCHost;
@@ -106,6 +109,42 @@ function getNewGethAccount(result, cb){
   });
 }
 
+function instanceAlreadyRunningMessage(processName){
+  console.log('\n--- NOTE: There is an instance of '+processName+' already running.'+
+    ' Please kill this instance by selecting option 5 before continuing\n')
+}
+
+function checkPreviousCleanExit(cb){
+  async.parallel({
+    geth: function(callback){
+      ps.lookup({
+        command: 'geth',
+        psargs: 'ef'
+      }, 
+      function(err, resultList){
+        callback(err, resultList)
+      })
+    }, 
+    constellation: function(callback){
+      ps.lookup({
+        command: 'constellation-node',
+        psargs: 'ef'
+      }, 
+      function(err, resultList){
+        callback(err, resultList)
+      })
+    } 
+  }, function(err, result){
+    if(result.geth.length > 0){
+      instanceAlreadyRunningMessage('geth')
+    }
+    if(result.constellation.length > 0){
+      instanceAlreadyRunningMessage('constellation')
+    }
+    cb(err, true)
+  })
+}
+
 exports.Hex2a = hex2a;
 exports.ClearDirectories = clearDirectories;
 exports.CreateDirectories = createDirectories;
@@ -113,3 +152,4 @@ exports.CreateWeb3Connection = createWeb3Connection;
 exports.ConnectToPeer = connectToPeer;
 exports.KillallGethConstellationNode = killallGethConstellationNode;
 exports.GetNewGethAccount = getNewGethAccount;
+exports.CheckPreviousCleanExit = checkPreviousCleanExit
