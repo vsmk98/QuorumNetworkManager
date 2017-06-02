@@ -173,6 +173,17 @@ function createGenesisBlockConfig(result, cb){
   });
 }
 
+function isWeb3RPCConnectionAlive(web3RPC){
+  let isAlive = false
+  try{
+    let accounts = web3RPC.eth.accounts
+    if(accounts){
+      isAlive = true
+    }
+  } catch(err){ } 
+  return isAlive 
+}
+
 exports.Hex2a = hex2a;
 exports.ClearDirectories = clearDirectories;
 exports.CreateDirectories = createDirectories;
@@ -183,3 +194,4 @@ exports.GetNewGethAccount = getNewGethAccount;
 exports.CheckPreviousCleanExit = checkPreviousCleanExit
 exports.CreateQuorumConfig = createQuorumConfig
 exports.CreateGenesisBlockConfig = createGenesisBlockConfig
+exports.IsWeb3RPCConnectionAlive = isWeb3RPCConnectionAlive

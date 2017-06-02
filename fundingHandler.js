@@ -1,4 +1,5 @@
 let whisper = require('./whisperNetwork.js')
+let util = require('./util.js')
 
 let processedAccounts = []
 
@@ -20,29 +21,38 @@ function accountDiff(arrayA, arrayB){
   return arrayC
 }
 
-function getAllBalancesForThisNode(result, cb){
-  let thresholdBalance = 0.1
+function lookAtBalances(result, cb){
+  if(util.IsWeb3RPCConnectionAlive(result.web3RPC)){
+    let thresholdBalance = 0.1
 
-  let commWeb3RPC = result.communicationNetwork.web3RPC
-  let web3RPC = result.web3RPC
-  let accounts = accountDiff(web3RPC.eth.accounts, processedAccounts)
+    let commWeb3RPC = result.communicationNetwork.web3RPC
+    let web3RPC = result.web3RPC
+    let accounts = accountDiff(web3RPC.eth.accounts, processedAccounts)
 
-  for(let i in accounts){
-    let account = accounts[i]
-    let balance = web3RPC.fromWei(web3RPC.eth.getBalance(account).toString(), 'ether')
-    // if balance is below threshold, request topup
-    if(balance < thresholdBalance){
-      whisper.RequestSomeEther(commWeb3RPC, account, function(){
-        processedAccounts.push(account)
-      })
-    }    
+    for(let i in accounts){
+      let account = accounts[i]
+      let balance = web3RPC.fromWei(web3RPC.eth.getBalance(account).toString(), 'ether')
+      // if balance is below threshold, request topup
+      if(balance < thresholdBalance){
+        whisper.RequestSomeEther(commWeb3RPC, account, function(){
+          processedAccounts.push(account)
+        })
+      }    
+    }
+    cb(true)
+  } else {
+    cb(false)
   }
 }
 
 function monitorAccountBalances(result, cb){
   let web3RPC = result.web3RPC
-  setInterval(function(){
-    getAllBalancesForThisNode(result, function(){ }) 
+  let intervalID = setInterval(function(){
+    lookAtBalances(result, function(connectionAlive){
+      if(connectionAlive == false){
+        clearInterval(intervalID)
+      }
+    }) 
   }, 5*1000)
   cb(null, result)
 }
