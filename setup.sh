@@ -29,7 +29,7 @@ source ~/.bashrc
 
 cd ..
 mkdir constellation && cd constellation/
-sudo apt-get install libdb-dev libsodium-dev zlib1g-dev libtinfo-dev unzip
+sudo apt-get install -y libdb-dev libsodium-dev zlib1g-dev libtinfo-dev unzip
 wget https://github.com/jpmorganchase/constellation/releases/download/v0.0.1-alpha/ubuntu1604.zip
 unzip ubuntu1604.zip
 chmod +x ubuntu1604/constellation-node

@@ -2,7 +2,8 @@
 
 1. Introduction & Additional functionality
 2. Getting started
-3. Performance analysis
+3. Firewall rules
+4. Performance analysis
 
 # Introduction & Additional functionality
 
@@ -34,6 +35,27 @@ To pause blockmaking on the network, the following only needs to be done on the 
 4. Detach from the screen (`Ctrl + a + d`, while pressing `Ctrl` first press `a` and then press `d`)
 
 # Getting started
+
+There are two options to getting started, manually following the below steps (starting at Requirements) or running a script. In summary, both will create the following directory structure:
+
+```
+workspace
+  quorum
+  quorum-genesis
+  constellation
+  QuorumNetworkManager
+  ...
+```
+
+## Running the script
+
+This script `setup.sh` needs to be run from the folder where you want the QuorumNetworkManager to be installed, like your workspace:
+
+1. `wget https://raw.githubusercontent.com/ConsenSys/QuorumNetworkManager/master/setup.sh`
+2. `chmod +x setup.sh`
+3. `./setup.sh`
+
+This will install all the requirements as well as all the below getting started steps
 
 ## Requirements
 
@@ -99,6 +121,23 @@ NOTE: the public-key (use ssh-keygen to generate one) of the machine you are wor
 ## Running
 
 Start the QuorumNetworkManager by running `node index.js`. 
+
+# Firewall rules
+
+```
+Name: geth-communicationNode
+Port: (TCP+UDP/40000)
+
+Name: geth-node
+Port: (TCP+UDP/20000)
+
+Name: whisper
+Port: (TCP+UDP/30303)
+
+ConstellationNetwork
+Port: (TCP+UDP/9000)
+
+```
 
 # Performance analysis
 
