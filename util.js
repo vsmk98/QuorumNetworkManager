@@ -1,5 +1,6 @@
 var exec = require('child_process').exec;
 var ps = require('ps-node')
+var fs = require('fs');
 var async = require('async')
 
 function killallGethConstellationNode(cb){
@@ -145,6 +146,33 @@ function checkPreviousCleanExit(cb){
   })
 }
 
+function createQuorumConfig(result, cb){
+  console.log('[*] Creating genesis config...');
+  var options = {encoding: 'utf8', timeout: 100*1000};
+  var config = '{'
+    +'"threshold": 1,'
+    +'"voters": ['
+    + '"'+result.addressList[1]+'"'
+    +'],'
+    +'"makers": ["'+result.addressList[0]+'"]'
+  +'}';
+
+  fs.writeFile('quorum-config.json', config, function(err, res){
+    cb(err, result);
+  });
+}
+
+function createGenesisBlockConfig(result, cb){
+  var options = {encoding: 'utf8', timeout: 100*1000};
+  var child = exec('quorum-genesis', options, function(error, stderr, stdout){
+    cb(null, result);
+  });
+  child.stderr.on('data', function(error){
+    console.log('ERROR:', error);
+    cb(error, null);
+  });
+}
+
 exports.Hex2a = hex2a;
 exports.ClearDirectories = clearDirectories;
 exports.CreateDirectories = createDirectories;
@@ -153,3 +181,5 @@ exports.ConnectToPeer = connectToPeer;
 exports.KillallGethConstellationNode = killallGethConstellationNode;
 exports.GetNewGethAccount = getNewGethAccount;
 exports.CheckPreviousCleanExit = checkPreviousCleanExit
+exports.CreateQuorumConfig = createQuorumConfig
+exports.CreateGenesisBlockConfig = createGenesisBlockConfig
