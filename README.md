@@ -2,7 +2,8 @@
 
 1. Introduction & Additional functionality
 2. Getting started
-3. Performance analysis
+3. Firewall rules
+4. Performance analysis
 
 # Introduction & Additional functionality
 
@@ -120,6 +121,23 @@ NOTE: the public-key (use ssh-keygen to generate one) of the machine you are wor
 ## Running
 
 Start the QuorumNetworkManager by running `node index.js`. 
+
+# Firewall rules
+
+```
+Name: geth-communicationNode
+Port: (TCP+UDP/40000)
+
+Name: geth-node
+Port: (TCP+UDP/20000)
+
+Name: whisper
+Port: (TCP+UDP/30303)
+
+ConstellationNetwork
+Port: (TCP+UDP/9000)
+
+```
 
 # Performance analysis
 
