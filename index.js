@@ -8,9 +8,10 @@ var events = require('./eventEmitter.js');
 var whisper = require('./whisperNetwork.js');
 var constellation = require('./constellation.js');
 var statistics = require('./networkStatistics.js');
-var newNetworkSetup = require('./newNetworkSetup.js')
 var peerHandler = require('./peerHandler.js')
 var fundingHandler = require('./fundingHandler.js')
+var newNetworkSetup = require('./newNetworkSetup.js')
+var joinNewNetwork = require('./joinNewNetwork.js')
 
 prompt.start();
 var quorumNetwork = null;
@@ -31,55 +32,6 @@ function startQuorumParticipantNode(result, cb){
   child.stderr.on('data', function(error){
     console.log('ERROR:', error);
     cb(error, null);
-  });
-}
-
-
-function joinQuorumNetwork(communicationNetwork, cb){
-  console.log('[*] Joining existing quorum network...');
-  
-  var seqFunction = async.seq(
-    util.ClearDirectories,
-    util.CreateDirectories,
-    constellation.CreateNewKeys, 
-    constellation.CreateConfig,
-    whisper.GetGenesisBlockConfig,
-    startQuorumParticipantNode,
-    util.CreateWeb3Connection,
-    peerHandler.ListenForNewEnodes,
-    whisper.AddEnodeRequestHandler,
-    whisper.AddEnodeResponseHandler,
-    fundingHandler.MonitorAccountBalances,
-    statistics.Setup
-  );
-
-  var result = {
-    localIpAddress: localIpAddress,
-    folders: ['Blockchain', 'Constellation'],
-    constellationKeySetup: [
-      {folderName: 'Constellation', fileName: 'node'},
-      {folderName: 'Constellation', fileName: 'nodeArch'}
-    ],
-    constellationConfigSetup: { 
-      configName: 'constellation.config', 
-      folderName: 'Constellation', 
-      localIpAddress : localIpAddress, 
-      localPort : 9000, 
-      remoteIpAddress : remoteIpAddress, 
-      remotePort : 9000, 
-      publicKeyFileName: 'node.pub', 
-      privateKeyFileName: 'node.key', 
-      publicArchKeyFileName: 'nodeArch.pub', 
-      privateArchKeyFileName: 'nodeArch.key', 
-    },
-    communicationNetwork: communicationNetwork,
-    "web3IPCHost": './Blockchain/geth.ipc',
-    "web3RPCProvider": 'http://localhost:20010'
-  };
-  seqFunction(result, function(err, res){
-    if (err) { return onErr(err); }
-    console.log('[*] New network started');
-    cb(err, res); 
   });
 }
 
@@ -124,25 +76,6 @@ function reconnectToQuorumNetwork(communicationNetwork, cb){
     console.log('[*] New network started');
     cb(err, res); 
   });
-}
-
-function handleJoiningExistingQuorumNetwork(cb){
-  console.log('In order to join an existing network, '
-    + 'please enter the ip address of one of the managing nodes');
-  prompt.get(['ipAddress'], function (err, network) {
-    remoteIpAddress = network.ipAddress;
-    whisper.JoinNetwork(remoteIpAddress, function(err, result){
-      if (err) { return onErr(err); }
-      communicationNetwork = Object.assign({}, result);
-      result = null;
-      joinQuorumNetwork(communicationNetwork, function(err, result){
-        if (err) { return onErr(err); }
-        quorumNetwork = Object.assign({}, result);
-        result = null;
-        cb();
-      }); 
-    });      
-  });  
 }
 
 function handleReconnectingToQuorumNetwork(cb){
@@ -193,7 +126,9 @@ function mainLoop(){
           mainLoop()
         });
       } else if(result.option == 2){
-        handleJoiningExistingQuorumNetwork(function(){
+        joinNewNetwork.HandleJoiningNewQuorumNetwork(localIpAddress, function(err, networks){
+          quorumNetwork = networks.quorumNetwork
+          communicationNetwork = networks.communicationNetwork
           mainLoop();
         });
       } else if(result.option == 3){

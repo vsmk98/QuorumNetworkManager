@@ -84,6 +84,7 @@ function addEnodeResponseHandler(result, cb){
 
 // TODO: Add to and from fields to validate origins & only respond to others requests
 // TODO: Test assumption that we want to connect to all nodes that respond with enodes
+// This requests other nodes for their enode and then waits for a response
 function addEnodeRequestHandler(result, cb){
   var comm = result.communicationNetwork;
   var shh = comm.web3RPC.shh;
@@ -92,26 +93,31 @@ function addEnodeRequestHandler(result, cb){
   var str = "request|enode";
   var hexString = new Buffer(str).toString('hex');
 
-  shh.post({
-    "from": id,
-    "topics": ["Enode"],
-    "payload": hexString,
-    "ttl": 10,
-    "workToProve": 1
-  }, function(err, res){
-    if(err){console.log('err', err);}
-    var filter = shh.filter({"topics":["Enode"]}).watch(function(err, msg) {
-      if(err){console.log("ERROR:", err);};
-      var message = null;
-      if(msg && msg.payload){
-        message = util.Hex2a(msg.payload);
-      }
-      if(message && message.indexOf('response|enode') >= 0){
-        var enode = message.replace('response|enode', '').substring(1);
-        events.emit('newEnode', enode);
-      }
-    });
-  });
+  setInterval(function(){
+    shh.post({
+      "from": id,
+      "topics": ["Enode"],
+      "payload": hexString,
+      "ttl": 10,
+      "workToProve": 1
+    }, function(err, res){
+      if(err){console.log('err', err)}
+    })
+  }, 60*1000)
+
+  var filter = shh.filter({"topics":["Enode"]}).watch(function(err, msg) {
+    if(err){console.log("ERROR:", err);};
+    var message = null;
+    if(msg && msg.payload){
+      message = util.Hex2a(msg.payload);
+    }
+    if(message && message.indexOf('response|enode') >= 0){
+      console.log('Got new enode!')
+      var enode = message.replace('response|enode', '').substring(1);
+      events.emit('newEnode', enode);
+    }
+  })
+  
   cb(null, result);
 }
 
@@ -164,31 +170,44 @@ function getGenesisBlockConfig(result, cb){
   var str = "request|genesisConfig";
   var hexString = new Buffer(str).toString('hex');
 
-  shh.post({
-    "from": id,
-    "topics": ["GenesisConfig"],
-    "payload": hexString,
-    "ttl": 10,
-    "workToProve": 1
-  }, function(err, res){
-    if(err){console.log('err', err);}
-    var filter = shh.filter({"topics":["GenesisConfig"]}).watch(function(err, msg) {
-      if(err){console.log("ERROR:", err);};
-      var message = null;
-      if(msg && msg.payload){
-        message = util.Hex2a(msg.payload);
-      }
-      if(message && message.indexOf('response|genesisConfig') >= 0){
-        filter.stopWatching();
-        var genesisConfig = message.replace('response|genesisConfig', '').substring(1);
-        genesisConfig = genesisConfig.replace(/\\n/g, '');
-        genesisConfig = genesisConfig.replace(/\\/g, '');
+  var receivedGenesisConfig = false
+
+  var intervalID = setInterval(function(){
+    if(receivedGenesisConfig){
+      clearInterval(intervalID)
+    } else {
+      shh.post({
+        "from": id,
+        "topics": ["GenesisConfig"],
+        "payload": hexString,
+        "ttl": 10,
+        "workToProve": 1
+      }, function(err, res){
+        if(err){console.log('err', err)}
+      })
+    }
+  }, 5000)
+
+  var filter = shh.filter({"topics":["GenesisConfig"]}).watch(function(err, msg) {
+    if(err){console.log("ERROR:", err)}
+    var message = null
+    if(msg && msg.payload){
+      message = util.Hex2a(msg.payload)
+    }
+    if(message && message.indexOf('response|genesisConfig') >= 0){
+      console.log('received genesis config')
+      if(receivedGenesisConfig == false){
+        receivedGenesisConfig = true
+        filter.stopWatching()
+        var genesisConfig = message.replace('response|genesisConfig', '').substring(1)
+        genesisConfig = genesisConfig.replace(/\\n/g, '')
+        genesisConfig = genesisConfig.replace(/\\/g, '')
         fs.writeFile('quorum-genesis.json', genesisConfig, function(err, res){
-          cb(err, result);
-        });
+          cb(err, result)
+        })
       }
-    });
-  });
+    }
+  })
 }
 
 
@@ -206,8 +225,8 @@ function startCommunicationNode(result, cb){
   });
 }
 
-function startCommunicationNetwork(cb){
-  console.log('[*] Starting communication network...');
+function startCommunicationNetwork(result, cb){
+  console.log('[*] Starting communication network...')
   var newNetworkSetup = async.seq(
     util.ClearDirectories,
     util.CreateDirectories,
@@ -215,18 +234,19 @@ function startCommunicationNetwork(cb){
     startCommunicationNode,
     util.CreateWeb3Connection,
     genesisConfigHandler    
-  );
+  )
 
-  var result = {
+  var config = {
     folders: ['CommunicationNode', 'CommunicationNode/geth'], 
     "web3IPCHost": './CommunicationNode/geth.ipc',
     "web3RPCProvider": 'http://localhost:40010'
-  };
-  newNetworkSetup(result, function(err, res){
-    if (err) { return onErr(err); }
-    console.log('[*] New communication network started');
-    cb(err, res); 
-  });
+  }
+  newNetworkSetup(config, function(err, res){
+    if (err) { return onErr(err) }
+    console.log('[*] New communication network started')
+    result.communicationNetwork = res
+    cb(err, result)
+  })
 }
 
 function joinCommunicationNetwork(remoteIpAddress, cb){
@@ -254,7 +274,7 @@ function joinCommunicationNetwork(remoteIpAddress, cb){
 }
 
 
-exports.StartNetwork = startCommunicationNetwork;
+exports.StartNetwork = startCommunicationNetwork
 exports.AddEtherResponseHandler = addEtherResponseHandler;
 exports.AddEnodeResponseHandler = addEnodeResponseHandler;
 exports.AddEnodeRequestHandler = addEnodeRequestHandler;

@@ -22,8 +22,9 @@ function startNewQuorumNetwork(config, cb){
     constellation.CreateConfig,
     util.CreateQuorumConfig,
     util.CreateGenesisBlockConfig,
-    startQuorumNode,
+    startQuorumBMAndBVNode,
     util.CreateWeb3Connection,
+    whisper.StartNetwork,
     whisper.AddEnodeResponseHandler,
     peerHandler.ListenForNewEnodes,
     whisper.AddEtherResponseHandler,
@@ -33,7 +34,6 @@ function startNewQuorumNetwork(config, cb){
 
   let result = {
     localIpAddress: config.localIpAddress,
-    communicationNetwork: config.communicationNetwork,
     folders: ['Blockchain', 'Constellation'], 
     constellationKeySetup: [
       {folderName: 'Constellation', fileName: 'node'},
@@ -52,23 +52,22 @@ function startNewQuorumNetwork(config, cb){
       privateArchKeyFileName: 'nodeArch.key', 
     },
     "web3IPCHost": './Blockchain/geth.ipc',
-    "web3RPCProvider": 'http://localhost:20010',
-  };
+    "web3RPCProvider": 'http://localhost:20010'
+  }
   seqFunction(result, function(err, res){
-    if (err) { return onErr(err); }
-    console.log('[*] New network started');
-    cb(err, res); 
-  });
+    if (err) { return console.log('ERROR', err) }
+    console.log('[*] New network started')
+    cb(err, res)
+  })
 }
 
-function startQuorumNode(result, cb){
+function startQuorumBMAndBVNode(result, cb){
   let options = {encoding: 'utf8', timeout: 100*1000}
-  let cmd = './startQuorumBMAndBVNodes.sh'
+  let cmd = './startQuorumBMAndBVNode.sh'
   cmd += ' '+result.blockVoters[0]
   cmd += ' '+result.blockMakers[0]
   cmd += ' '+result.minBlockTime
   cmd += ' '+result.maxBlockTime
-  console.log('cmd:', cmd)
   let child = exec(cmd, options)
   child.stdout.on('data', function(data){
     cb(null, result)
@@ -159,20 +158,15 @@ function getConfiguration(result, cb){
 function handleStartingNewQuorumNetwork(localIpAddress, cb){
   config = {}
   config.localIpAddress = localIpAddress
-  whisper.StartNetwork(function(err, result){
+  startNewQuorumNetwork(config, function(err, result){
     if (err) { return console.log('ERROR', err) }
-    let communicationNetwork = Object.assign({}, result)
-    config.communicationNetwork = communicationNetwork
-    startNewQuorumNetwork(config, function(err, result){
-      if (err) { return console.log('ERROR', err) }
-      let quorumNetwork = Object.assign({}, result)
-      let networks = {
-        quorumNetwork: quorumNetwork,
-        communicationNetwork: config.communicationNetwork
-      }
-      cb(err, networks)
-    })
-  }) 
+    config.quorumNetwork = Object.assign({}, result)
+    let networks = {
+      quorumNetwork: config.quorumNetwork,
+      communicationNetwork: config.communicationNetwork
+    }
+    cb(err, networks)
+  })
 }
 
 exports.HandleStartingNewQuorumNetwork = handleStartingNewQuorumNetwork
