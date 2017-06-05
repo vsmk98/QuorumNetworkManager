@@ -112,7 +112,6 @@ function addEnodeRequestHandler(result, cb){
       message = util.Hex2a(msg.payload);
     }
     if(message && message.indexOf('response|enode') >= 0){
-      console.log('Got new enode!')
       var enode = message.replace('response|enode', '').substring(1);
       events.emit('newEnode', enode);
     }
