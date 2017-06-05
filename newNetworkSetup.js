@@ -143,12 +143,12 @@ function getConfiguration(result, cb){
     result.minBlockTime = config.minimumTimeBetweenBlocks
     result.maxBlockTime = config.maximumTimeBetweenBlocks
 
-    getBlockVoters(config, function(err, blockVoters){
+    getBlockMakers(config, function(err, blockMakers){
       if(err){console.log('ERROR:', err)}
-      result.blockVoters = blockVoters
-      getBlockMakers(config, function(err, blockMakers){
+      result.blockMakers = blockMakers
+      getBlockVoters(config, function(err, blockVoters){
         if(err){console.log('ERROR:', err)}
-        result.blockMakers = blockMakers
+        result.blockVoters = blockVoters
         cb(err, result) 
       })
     })

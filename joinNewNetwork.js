@@ -36,8 +36,8 @@ function joinNewQuorumNetwork(config, cb){
     util.CreateWeb3Connection,
     peerHandler.ListenForNewEnodes,
     whisper.AddEnodeRequestHandler,
-    peerHandler.ListenForNewEnodes,
     whisper.AddEnodeResponseHandler,
+    peerHandler.ListenForNewEnodes,
     fundingHandler.MonitorAccountBalances,
     statistics.Setup
   )

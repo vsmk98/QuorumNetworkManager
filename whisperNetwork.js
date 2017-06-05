@@ -210,8 +210,6 @@ function getGenesisBlockConfig(result, cb){
   })
 }
 
-
-
 function startCommunicationNode(result, cb){
   var options = {encoding: 'utf8', timeout: 100*1000};
   var cmd = './startCommunicationNode.sh';
