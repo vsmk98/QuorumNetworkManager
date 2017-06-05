@@ -149,14 +149,27 @@ function checkPreviousCleanExit(cb){
 function createQuorumConfig(result, cb){
   console.log('[*] Creating genesis config...');
   var options = {encoding: 'utf8', timeout: 100*1000};
+  let voterList = ''
+  for(let bv of result.blockVoters){
+    voterList += '"'+bv+'",'
+  }
+  voterList = voterList.slice(0, -1)
+  let makerList = ''
+  for(let bm of result.blockMakers){
+    makerList += '"'+bm+'",'
+  }
+  makerList = makerList.slice(0, -1)
+  console.log('result.threshold:', result.threshold)
   var config = '{'
-    +'"threshold": 1,'
+    +'"threshold": '+result.threshold+','
     +'"voters": ['
-    + '"'+result.addressList[1]+'"'
+    + voterList
     +'],'
-    +'"makers": ["'+result.addressList[0]+'"]'
-  +'}';
-
+    +'"makers": ['
+    + makerList
+    +']'
+  +'}'
+  
   fs.writeFile('quorum-config.json', config, function(err, res){
     cb(err, result);
   });

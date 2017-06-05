@@ -12,7 +12,7 @@ GLOBAL_ARGS="--networkid $NETID --shh --rpc --rpcaddr 0.0.0.0 --rpcapi admin,db,
 nohup constellation-node constellation.config &> constellation.log &
 sleep 5
 
-PRIVATE_CONFIG=constellation.config nohup geth --datadir Blockchain $GLOBAL_ARGS --rpcport 20010 --rpccorsdomain "*" --port 20000 --voteaccount $1 --votepassword "" --blockmakeraccount $2 --blockmakerpassword "" --singleblockmaker --minblocktime 0 --maxblocktime 1 --preload "pauseBlockMaking.js" &> gethNode.log &
+PRIVATE_CONFIG=constellation.config nohup geth --datadir Blockchain $GLOBAL_ARGS --rpcport 20010 --rpccorsdomain "*" --port 20000 --voteaccount $1 --votepassword "" --blockmakeraccount $2 --blockmakerpassword "" --singleblockmaker --minblocktime $3 --maxblocktime $4 &> gethNode.log &
 sleep 5
 
 echo "[*] Node started"

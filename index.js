@@ -49,7 +49,7 @@ function joinQuorumNetwork(communicationNetwork, cb){
     peerHandler.ListenForNewEnodes,
     whisper.AddEnodeRequestHandler,
     whisper.AddEnodeResponseHandler,
-    monitorAccountBalances,
+    fundingHandler.MonitorAccountBalances,
     statistics.Setup
   );
 
@@ -92,7 +92,7 @@ function reconnectToQuorumNetwork(communicationNetwork, cb){
     peerHandler.ListenForNewEnodes,
     whisper.AddEnodeRequestHandler,
     whisper.AddEnodeResponseHandler,
-    monitorAccountBalances,
+    fundingHandler.MonitorAccountBalances,
     statistics.Setup
   );
 

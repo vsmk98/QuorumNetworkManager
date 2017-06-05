@@ -1,23 +1,25 @@
 let async = require('async')
-let exec = require('child_process').exec;
+let exec = require('child_process').exec
+let prompt = require('prompt')
 
 let whisper = require('./whisperNetwork.js')
 let util = require('./util.js')
-let constellation = require('./constellation.js');
-let statistics = require('./networkStatistics.js');
+let constellation = require('./constellation.js')
+let statistics = require('./networkStatistics.js')
 let peerHandler = require('./peerHandler.js')
 let fundingHandler = require('./fundingHandler.js')
 
-function startNewQuorumNetwork(localIpAddress, communicationNetwork, cb){
+prompt.start()
+
+function startNewQuorumNetwork(config, cb){
   console.log('[*] Starting new network...')
   
   let seqFunction = async.seq(
     util.ClearDirectories,
     util.CreateDirectories,
+    getConfiguration,
     constellation.CreateNewKeys, 
     constellation.CreateConfig,
-    util.GetNewGethAccount,
-    util.GetNewGethAccount,
     util.CreateQuorumConfig,
     util.CreateGenesisBlockConfig,
     startQuorumNode,
@@ -29,9 +31,9 @@ function startNewQuorumNetwork(localIpAddress, communicationNetwork, cb){
     statistics.Setup
   )
 
-  var result = {
-    localIpAddress: localIpAddress,
-    communicationNetwork: communicationNetwork,
+  let result = {
+    localIpAddress: config.localIpAddress,
+    communicationNetwork: config.communicationNetwork,
     folders: ['Blockchain', 'Constellation'], 
     constellationKeySetup: [
       {folderName: 'Constellation', fileName: 'node'},
@@ -40,7 +42,7 @@ function startNewQuorumNetwork(localIpAddress, communicationNetwork, cb){
     constellationConfigSetup: { 
       configName: 'constellation.config', 
       folderName: 'Constellation', 
-      localIpAddress : localIpAddress, 
+      localIpAddress : config.localIpAddress, 
       localPort : 9000, // TODO: extract this to a config!
       remoteIpAddress : null, 
       remotePort : 9000, // TODO: extract this to a config! 
@@ -60,30 +62,113 @@ function startNewQuorumNetwork(localIpAddress, communicationNetwork, cb){
 }
 
 function startQuorumNode(result, cb){
-  var options = {encoding: 'utf8', timeout: 100*1000};
-  var cmd = './startQuorumBMAndBVNodes.sh';
-  cmd += ' '+result.addressList[1];
-  cmd += ' '+result.addressList[0];
-  var child = exec(cmd, options);
+  let options = {encoding: 'utf8', timeout: 100*1000}
+  let cmd = './startQuorumBMAndBVNodes.sh'
+  cmd += ' '+result.blockVoters[0]
+  cmd += ' '+result.blockMakers[0]
+  cmd += ' '+result.minBlockTime
+  cmd += ' '+result.maxBlockTime
+  console.log('cmd:', cmd)
+  let child = exec(cmd, options)
   child.stdout.on('data', function(data){
-    cb(null, result);
-  });
+    cb(null, result)
+  })
   child.stderr.on('data', function(error){
-    console.log('ERROR:', error);
-    cb(error, null);
-  });
+    console.log('ERROR:', error)
+    cb(error, null)
+  })
+}
+
+function getBlockVoters(config, cb){
+  console.log('\nSelect which block voters to use') 
+  console.log('Note that the first address will be used on this node') 
+  console.log('Please enter an address (starting with 0x) or enter a 1 to generate an address to use') 
+  let promptArray = []
+  for(let i = 0; i < config.numberOfBlockVoters; i++){
+    promptArray.push('address'+i)
+  }
+  prompt.get(promptArray, function (err, addressList) {
+    let obj = {addressList: []}
+    async.eachSeries(addressList, function(address, callback){
+      if(address.indexOf('1') === 0){
+        util.GetNewGethAccount(obj, function(err, res){ 
+          callback(err)
+        })
+      } else{
+        obj.addressList.push(address)
+        callback(null)
+      }
+    }, function(err){
+      cb(err, obj.addressList) 
+    })
+  })
+}
+
+function getBlockMakers(config, cb){
+  console.log('\nSelect which block makers to use') 
+  console.log('Note that the first address will be used on this node') 
+  console.log('Please enter an address (starting with 0x) or enter a 1 to generate an address to use') 
+  let promptArray = []
+  for(let i = 0; i < config.numberOfBlockMakers; i++){
+    promptArray.push('address'+i)
+  }
+  prompt.get(promptArray, function (err, addressList) {
+    let obj = {addressList: []}
+    async.eachSeries(addressList, function(address, callback){
+      if(address.indexOf('1') === 0){
+        util.GetNewGethAccount(obj, function(err, obj){ 
+          callback(err)
+        })
+      } else{
+        obj.addressList.push(address)
+        callback(null)
+      }
+    }, function(err){
+      cb(err, obj.addressList) 
+    })
+  })
+}
+
+function getConfiguration(result, cb){
+  console.log('Please enter the configuration for this network:')
+  prompt.get([
+    'numberOfBlockVoters', 
+    'numberOfBlockMakers', 
+    'minimumTimeBetweenBlocks', 
+    'maximumTimeBetweenBlocks', 
+    'minimumNumberOfRequiredVoters' 
+    ]
+  , function (err, config) {
+    if(err){console.log('ERROR:', err)}
+    result.threshold = config.minimumNumberOfRequiredVoters
+    result.minBlockTime = config.minimumTimeBetweenBlocks
+    result.maxBlockTime = config.maximumTimeBetweenBlocks
+
+    getBlockVoters(config, function(err, blockVoters){
+      if(err){console.log('ERROR:', err)}
+      result.blockVoters = blockVoters
+      getBlockMakers(config, function(err, blockMakers){
+        if(err){console.log('ERROR:', err)}
+        result.blockMakers = blockMakers
+        cb(err, result) 
+      })
+    })
+  })
 }
 
 function handleStartingNewQuorumNetwork(localIpAddress, cb){
+  config = {}
+  config.localIpAddress = localIpAddress
   whisper.StartNetwork(function(err, result){
     if (err) { return console.log('ERROR', err) }
     let communicationNetwork = Object.assign({}, result)
-    startNewQuorumNetwork(localIpAddress, communicationNetwork, function(err, result){
+    config.communicationNetwork = communicationNetwork
+    startNewQuorumNetwork(config, function(err, result){
       if (err) { return console.log('ERROR', err) }
       let quorumNetwork = Object.assign({}, result)
       let networks = {
         quorumNetwork: quorumNetwork,
-        communicationNetwork: communicationNetwork
+        communicationNetwork: config.communicationNetwork
       }
       cb(err, networks)
     })
