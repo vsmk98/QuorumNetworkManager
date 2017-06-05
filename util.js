@@ -55,24 +55,24 @@ function hex2a(hexx) {
   return str;
 }
 
-// TODO: added error handler here for web3 connections so that program doesn't exit on error
+// TODO: add error handler here for web3 connections so that program doesn't exit on error
 function createWeb3Connection(result, cb){
   // Web3 IPC
-  var host = result.web3IPCHost;
-  var Web3IPC = require('web3_ipc');
-  var options = {
+  let host = result.web3IPCHost;
+  let Web3IPC = require('web3_ipc');
+  let options = {
     host: host,
     ipc: true,
     personal: true,
     admin: true,
     debug: false
   };
-  var web3IPC = Web3IPC.create(options);
+  let web3IPC = Web3IPC.create(options);
   result.web3IPC = web3IPC;
   // Web3 RPC
-  var httpProvider = result.web3RPCProvider;
-  var Web3RPC = require('web3');
-  var web3RPC = new Web3RPC();
+  let httpProvider = result.web3RPCProvider;
+  let Web3RPC = require('web3');
+  let web3RPC = new Web3RPC();
   web3RPC.setProvider(new web3RPC.providers.HttpProvider(httpProvider));
   result.web3RPC = web3RPC;
   cb(null, result);

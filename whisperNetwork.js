@@ -52,22 +52,22 @@ function addEtherResponseHandler(result, cb){
 // TODO: Add check whether requester has correct permissions
 // This will broadcast this node's enode to any 'request|enode' message
 function addEnodeResponseHandler(result, cb){
-  var web3RPC = result.web3RPC;
-  var web3IPC = result.web3IPC;
-  var commWeb3RPC = result.communicationNetwork.web3RPC;
-  var commWeb3IPC = result.communicationNetwork.web3IPC;
+  let web3RPC = result.web3RPC
+  let web3IPC = result.web3IPC
+  let commWeb3RPC = result.communicationNetwork.web3RPC
+  let commWeb3IPC = result.communicationNetwork.web3IPC
   commWeb3RPC.shh.filter({"topics":["Enode"]}).watch(function(err, msg) {
-    if(err){console.log("ERROR:", err);};
+    if(err){console.log("ERROR:", err)}
     var message = null
     if(msg && msg.payload){
-      message = util.Hex2a(msg.payload);
+      message = util.Hex2a(msg.payload)
     }
     if(message && message.indexOf('request|enode') >= 0){
       web3IPC.admin.nodeInfo(function(err, nodeInfo){
-        if(err){console.log('ERROR:', err);}
-        var enodeResponse = 'response|enode'+nodeInfo.enode;
-        enodeResponse = enodeResponse.replace('\[\:\:\]', result.localIpAddress);
-        var hexString = new Buffer(enodeResponse).toString('hex');        
+        if(err){console.log('ERROR:', err)}
+        var enodeResponse = 'response|enode'+nodeInfo.enode
+        enodeResponse = enodeResponse.replace('\[\:\:\]', result.localIpAddress)
+        var hexString = new Buffer(enodeResponse).toString('hex')
         commWeb3RPC.shh.post({
           "topics": ["Enode"],
           "payload": hexString,
@@ -75,11 +75,11 @@ function addEnodeResponseHandler(result, cb){
           "workToProve": 1
         }, function(err, res){
           if(err){console.log('err', err);}
-        });
-      });
+        })
+      })
     }
-  });
-  cb(null, result);
+  })
+  cb(null, result)
 }
 
 // TODO: Add to and from fields to validate origins & only respond to others requests
@@ -164,6 +164,9 @@ function genesisConfigHandler(result, cb){
 
 // TODO: Add to and from fields to validate origins
 function getGenesisBlockConfig(result, cb){
+
+  console.log('[*] Requesting genesis block config. This will block until the other node is online')
+
   var shh = result.communicationNetwork.web3RPC.shh;
   
   var id = shh.newIdentity();
@@ -225,7 +228,7 @@ function startCommunicationNode(result, cb){
 
 function startCommunicationNetwork(result, cb){
   console.log('[*] Starting communication network...')
-  var newNetworkSetup = async.seq(
+  let networkSetup = async.seq(
     util.ClearDirectories,
     util.CreateDirectories,
     copyCommunicationNodeKey,
@@ -234,15 +237,15 @@ function startCommunicationNetwork(result, cb){
     genesisConfigHandler    
   )
 
-  var config = {
+  let config = {
     folders: ['CommunicationNode', 'CommunicationNode/geth'], 
     "web3IPCHost": './CommunicationNode/geth.ipc',
     "web3RPCProvider": 'http://localhost:40010'
   }
-  newNetworkSetup(config, function(err, res){
-    if (err) { return onErr(err) }
+  networkSetup(config, function(err, commNet){
+    if (err) { console.log('ERROR:', err) }
     console.log('[*] New communication network started')
-    result.communicationNetwork = res
+    result.communicationNetwork = commNet
     cb(err, result)
   })
 }
