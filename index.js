@@ -8,7 +8,7 @@ var events = require('./eventEmitter.js');
 var whisper = require('./whisperNetwork.js');
 var constellation = require('./constellation.js');
 var statistics = require('./networkStatistics.js');
-var networkSetup = require('./networkSetup.js')
+var newNetworkSetup = require('./newNetworkSetup.js')
 var peerHandler = require('./peerHandler.js')
 var fundingHandler = require('./fundingHandler.js')
 
@@ -187,7 +187,7 @@ function mainLoop(){
     prompt.get(['option'], function (err, result) {
       if (err) { return onErr(err); }
       if(result.option == 1){
-        networkSetup.HandleStartingNewQuorumNetwork(localIpAddress, function(err, networks){
+        newNetworkSetup.HandleStartingNewQuorumNetwork(localIpAddress, function(err, networks){
           quorumNetwork = networks.quorumNetwork
           communicationNetwork = networks.communicationNetwork
           mainLoop()
