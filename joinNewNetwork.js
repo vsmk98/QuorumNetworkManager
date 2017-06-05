@@ -15,11 +15,11 @@ function joinNewQuorumNetwork(config, cb){
   console.log('[*] Joining existing quorum network...');
 
   let startNode = null
-  if(config.joinOption === 0){
+  if(config.joinOption == 0){
     startNode = startQuorumBMAndBVNode
-  } else if(config.joinOption === 1) {
+  } else if(config.joinOption == 1) {
     startNode = startQuorumBMNode
-  } else if(config.joinOption === 2){
+  } else if(config.joinOption == 2){
     startNode = startQuorumBVNode
   } else {
     startNode = startQuorumParticipantNode
@@ -73,13 +73,13 @@ function joinNewQuorumNetwork(config, cb){
 }
 
 function startQuorumBMAndBVNode(result, cb){
+  console.log('[*] Started node as BM + BV')
   let options = {encoding: 'utf8', timeout: 100*1000}
-  let cmd = './startQuorumBMAndBVNodes.sh'
+  let cmd = './startQuorumBMAndBVNode.sh'
   cmd += ' '+result.blockVoters[0]
   cmd += ' '+result.blockMakers[0]
   cmd += ' '+result.minBlockTime
   cmd += ' '+result.maxBlockTime
-  console.log('cmd:', cmd)
   let child = exec(cmd, options)
   child.stdout.on('data', function(data){
     cb(null, result)
