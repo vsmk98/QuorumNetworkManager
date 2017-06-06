@@ -3,7 +3,7 @@
 sudo apt-get update;
 sudo apt-get install -y build-essential libssl-dev;
 
-curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -
+curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
 sudo apt-get install -y nodejs
 
 wget https://storage.googleapis.com/golang/go1.7.linux-amd64.tar.gz
