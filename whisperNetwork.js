@@ -103,7 +103,7 @@ function addEnodeRequestHandler(result, cb){
     }, function(err, res){
       if(err){console.log('err', err)}
     })
-  }, 60*1000)
+  }, 10*1000)
 
   var filter = shh.filter({"topics":["Enode"]}).watch(function(err, msg) {
     if(err){console.log("ERROR:", err);};
