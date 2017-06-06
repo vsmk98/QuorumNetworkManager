@@ -27,6 +27,7 @@ function rejoinQuorumNetwork(config, cb){
   
   let seqFunction = async.seq(
     getConfiguration,
+    whisper.GetGenesisBlockConfig,
     startNode,
     util.CreateWeb3Connection,
     peerHandler.ListenForNewEnodes,
