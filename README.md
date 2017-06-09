@@ -54,6 +54,7 @@ This script `setup.sh` needs to be run from the folder where you want the Quorum
 1. `wget https://raw.githubusercontent.com/ConsenSys/QuorumNetworkManager/master/setup.sh`
 2. `chmod +x setup.sh`
 3. `./setup.sh`
+4. `source ~/.bashrc`
 
 This will install all the requirements as well as all the below getting started steps
 
