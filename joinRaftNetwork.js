@@ -19,6 +19,7 @@ function joinRaftNetwork(config, cb){
     util.ClearDirectories,
     util.CreateDirectories,
     util.GetNewGethAccount,
+    displayGethAccount,
     util.GenerateNodeKey,    
     util.DisplayEnode,
     getConfiguration,
@@ -66,6 +67,11 @@ function joinRaftNetwork(config, cb){
   })
 }
 
+function displayGethAccount(result, cb){
+  console.log('Account:', result.addressList[0])
+  cb(null, result)
+}
+
 function startRaftNode(result, cb){
   let options = {encoding: 'utf8', timeout: 100*1000}
   let cmd = './startRaftNode.sh'
@@ -80,10 +86,14 @@ function startRaftNode(result, cb){
 }
 
 function askForEnode(result, cb){
-  prompt.get(['enode'] , function (err, answer) {
+  prompt.get(['enode', 'address'] , function (err, answer) {
     if(err){console.log('ERROR:', err)}
     if(answer.enode != 0){
       result.enodeList.push(answer.enode)
+      if(!result.addressList){
+        result.addressList = []
+      }
+      result.addressList.push(answer.address)
       askForEnode(result, cb)
     } else {
       cb(null, result)
@@ -108,19 +118,12 @@ function createStaticNodeFile(enodeList, cb){
 }
 
 function getConfiguration(result, cb){
-  console.log('Please enter the enodes of other nodes, followed by a 0 when done:')
+  console.log('Please enter the enodes and addresses of other nodes, followed by two 0s when done:')
   askForEnode(result, function(err, result){
     createStaticNodeFile(result.enodeList, function(err, res){
       cb(err, result)
     })
   })
-}
-
-function addAddressAsBlockMakerAndVoter(result, cb){
-  result.blockMakers = [result.addressList[0]]
-  result.blockVoters = [result.addressList[0]]
-  result.threshold = 1 
-  cb(null, result)
 }
 
 function handleJoiningRaftNetwork(localIpAddress, cb){
