@@ -275,6 +275,10 @@ function joinCommunicationNetwork(obj, cb){
   seqFunction(result, function(err, res){
     if (err) { return onErr(err); }
     console.log('[*] New communication network started');
+    if(obj && !obj.communicationNetwork){
+      obj.communicationNetwork = res.communicationNetwork
+    }
+      
     cb(err, obj); 
   });
 }

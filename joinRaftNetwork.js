@@ -37,6 +37,7 @@ function joinRaftNetwork(config, cb){
 
   let result = {
     localIpAddress: config.localIpAddress,
+    remoteIpAddress : config.remoteIpAddress, 
     folders: ['Blockchain', 'Blockchain/geth', 'Constellation'], 
     constellationKeySetup: [
       {folderName: 'Constellation', fileName: 'node'},
