@@ -18,13 +18,13 @@ function startNewRaftNetwork(config, cb){
   let seqFunction = async.seq(
     util.ClearDirectories,
     util.CreateDirectories,
+    util.GenerateNodeKey,    
+    util.DisplayEnode,
+    getConfiguration,
     util.GetNewGethAccount,
     addAddressAsBlockMakerAndVoter,
     util.CreateQuorumConfig,
     util.CreateGenesisBlockConfig,
-    util.GenerateNodeKey,    
-    util.DisplayEnode,
-    getConfiguration,
     constellation.CreateNewKeys, 
     constellation.CreateConfig,
     whisper.StartNetwork,
@@ -113,7 +113,7 @@ function createStaticNodeFile(enodeList, cb){
 }
 
 function getConfiguration(result, cb){
-  console.log('Please enter the enodes and addresses of other nodes, followed by two 0s when done:')
+  console.log('Please enter the enodes and addresses of other nodes, followed by a 0 for enode and 0 for address  when done:')
   askForEnode(result, function(err, result){
     createStaticNodeFile(result.enodeList, function(err, res){
       cb(err, result)

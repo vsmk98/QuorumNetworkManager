@@ -41,6 +41,7 @@ jspm_packages
 *.swp
 
 # Blockchain data files
+Blockchain/raft-snap*
 Blockchain/geth*
 Blockchain/keystore*
 Blockchain2/geth*
