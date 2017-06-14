@@ -3,7 +3,8 @@
 1. Introduction & Additional functionality
 2. Getting started
 3. Firewall rules
-4. Performance analysis
+4. Cakeshop
+5. Performance analysis
 
 # Introduction & Additional functionality
 
@@ -127,18 +128,58 @@ Start the QuorumNetworkManager by running `node index.js`.
 
 ```
 Name: geth-communicationNode
-Port: (TCP+UDP/40000)
+Port: TCP 40000
 
 Name: geth-node
-Port: (TCP+UDP/20000)
+Port: TCP 20000
 
-Name: whisper
-Port: (TCP+UDP/30303)
+Name: DEVp2p
+Port: TCP 30303
 
-ConstellationNetwork
-Port: (TCP+UDP/9000)
+constellation-network
+Port: TCP 9000
 
 ```
+# Cakeshop
+
+This section details setting up Cakeshop: https://github.com/jpmorganchase/cakeshop
+
+## Requirements
+
+1. Java 7+ (`sudo apt-get install -y default-jre`)
+
+## Installation
+
+From your workspace folder:
+
+1. `mkdir cakeshop && cd $_`
+2. `wget https://github.com/jpmorganchase/cakeshop/releases/download/0.9.1/cakeshop-0.9.1-x86_64-linux.war`
+3. `mv cakeshop-0.9.1-x86_64-linux.war cakeshop.war`
+4. `java -jar cakeshop.war example`
+5. `nano data/local/application.properties`
+6. Change `geth.url` to `geth.url=http\://localhost\:20010`
+7. Save and exit (`ctrl + x`, `y`, hit enter)
+
+## Firewall rules
+```
+Name: cakeshop
+Port: TCP 8080
+```
+
+## Running
+
+The first that starts can simply do the following
+
+1. `CAKESHOP_SHARED_CONFIG="./data/local/shared.properties" java -jar cakeshop.war`
+
+The nodes that are started later need to get the ContractRegistry contract address from the first node
+
+1. `echo contract.registry.addr=<get address from the first node that started> >> data/local/shared.properties`
+2. `CAKESHOP_SHARED_CONFIG="./data/local/shared.properties" java -jar cakeshop.war`
+
+## Troubleshooting
+
+If any of the above steps are causing a head ache, `rm -rf data` and start from step 4
 
 # Performance analysis
 
