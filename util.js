@@ -197,6 +197,35 @@ function isWeb3RPCConnectionAlive(web3RPC){
   return isAlive 
 }
 
+function generateNodeKey(result, cb){
+  var options = {encoding: 'utf8', timeout: 10*1000};
+  console.log('Generating node key')
+  var child = exec('bootnode -genkey Blockchain/geth/nodekey', options)
+  child.stderr.on('data', function(error){
+    console.log('ERROR:', error)
+  })
+  cb(null, result)
+}
+
+// TODO: ports shouldn't be hard coded!!!
+function displayEnode(result, cb){
+  var options = {encoding: 'utf8', timeout: 10*1000};
+  var child = exec('bootnode -nodekey Blockchain/geth/nodekey -writeaddress', options)
+  child.stdout.on('data', function(data){
+    data = data.slice(0, -1)
+    let enode = 'enode://'+data+'@'+result.localIpAddress+':20000'
+    console.log('enode:', enode)
+    result.nodePubKey = data
+    result.enodeList = [enode]
+    cb(null, result)
+  })
+  child.stderr.on('data', function(error){
+    console.log('ERROR:', error)
+    cb(error, null)
+  })
+}
+
+
 exports.Hex2a = hex2a;
 exports.ClearDirectories = clearDirectories;
 exports.CreateDirectories = createDirectories;
@@ -208,3 +237,5 @@ exports.CheckPreviousCleanExit = checkPreviousCleanExit
 exports.CreateQuorumConfig = createQuorumConfig
 exports.CreateGenesisBlockConfig = createGenesisBlockConfig
 exports.IsWeb3RPCConnectionAlive = isWeb3RPCConnectionAlive
+exports.GenerateNodeKey = generateNodeKey
+exports.DisplayEnode = displayEnode
