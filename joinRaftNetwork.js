@@ -24,7 +24,7 @@ function joinRaftNetwork(config, cb){
     getConfiguration,
     constellation.CreateNewKeys, 
     constellation.CreateConfig,
-    whisper.StartNetwork,
+    whisper.JoinNetwork,
     whisper.GetGenesisBlockConfig,
     startRaftNode,
     util.CreateWeb3Connection,
