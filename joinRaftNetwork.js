@@ -24,7 +24,6 @@ function joinRaftNetwork(config, cb){
     getConfiguration,
     constellation.CreateNewKeys, 
     constellation.CreateConfig,
-    whisper.JoinNetwork,
     whisper.GetGenesisBlockConfig,
     startRaftNode,
     util.CreateWeb3Connection,
@@ -55,6 +54,7 @@ function joinRaftNetwork(config, cb){
       publicArchKeyFileName: 'nodeArch.pub', 
       privateArchKeyFileName: 'nodeArch.key', 
     },
+    communicationNetwork: config.communicationNetwork,
     "web3IPCHost": './Blockchain/geth.ipc',
     "web3RPCProvider": 'http://localhost:20010'
   }
@@ -129,15 +129,20 @@ function handleJoiningRaftNetwork(localIpAddress, cb){
     + 'please enter the ip address of the coordinating node')
   prompt.get(['ipAddress'], function (err, network) {
     config.remoteIpAddress = network.ipAddress
-    joinRaftNetwork(config, function(err, result){
-      if (err) { return console.log('ERROR', err) }
-      console.log('Network started')
-      config.raftNetwork = Object.assign({}, result)
-      let networks = {
-        raftNetwork: config.raftNetwork,
-        communicationNetwork: config.communicationNetwork
-      }
-      cb(err, networks)
+    whisper.JoinNetwork(config.remoteIpAddress, function(err, result){
+      if (err) { return console(err) }
+      let communicationNetwork = Object.assign({}, result)
+      config.communicationNetwork = communicationNetwork
+      joinRaftNetwork(config, function(err, result){
+        if (err) { return console.log('ERROR', err) }
+        console.log('Network started')
+        config.raftNetwork = Object.assign({}, result)
+        let networks = {
+          raftNetwork: config.raftNetwork,
+          communicationNetwork: config.communicationNetwork
+        }
+        cb(err, networks)
+      })
     })
   })
 }

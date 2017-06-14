@@ -249,12 +249,7 @@ function startCommunicationNetwork(result, cb){
   })
 }
 
-function joinCommunicationNetwork(obj, cb){
-
-  var remoteIpAddress = obj
-  if(obj && obj.remoteIpAddress){
-    remoteIpAddress = obj.remoteIpAddress 
-  }  
+function joinCommunicationNetwork(remoteIpAddress, cb){
 
   console.log('[*] Joining communication network...');
   var seqFunction = async.seq(
@@ -275,11 +270,7 @@ function joinCommunicationNetwork(obj, cb){
   seqFunction(result, function(err, res){
     if (err) { return onErr(err); }
     console.log('[*] New communication network started');
-    if(obj && !obj.communicationNetwork){
-      obj.communicationNetwork = res.communicationNetwork
-    }
-      
-    cb(err, obj); 
+    cb(err, res); 
   });
 }
 
