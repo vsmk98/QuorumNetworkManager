@@ -20,12 +20,20 @@ var networkStatisticsEnabled = false;
 var consensus = null //quorumChain or raft
 
 function handleConsensusChoice(){
-  console.log('Please select an option:\n1) Raft\n2) QuorumChain')
+  console.log('Please select an option:\n1) Raft\n2) QuorumChain\n5) Kill all geth and constellation')
   prompt.get(['option'], function(err, answer){
     if(answer.option == 1){
       consensus = 'raft'
     } else if (answer.option == 2){
       consensus = 'quorumChain'
+    } else if(answr.option == 5){
+      util.KillallGethConstellationNode(function(err, result){
+        if (err) { return onErr(err); }
+        quorumNetwork = null;
+        raftNetwork = null
+        communicationNetwork = null;
+        mainLoop();
+      })      
     }
     mainLoop()
   })
