@@ -47,7 +47,7 @@ function joinRaftNetwork(config, cb){
       folderName: 'Constellation', 
       localIpAddress : config.localIpAddress, 
       localPort : 9000, // TODO: extract this to a config!
-      remoteIpAddress : null, 
+      remoteIpAddress : config.remoteIpAddress, 
       remotePort : 9000, // TODO: extract this to a config! 
       publicKeyFileName: 'node.pub', 
       privateKeyFileName: 'node.key', 
