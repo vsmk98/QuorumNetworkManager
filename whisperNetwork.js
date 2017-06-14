@@ -249,7 +249,13 @@ function startCommunicationNetwork(result, cb){
   })
 }
 
-function joinCommunicationNetwork(remoteIpAddress, cb){
+function joinCommunicationNetwork(obj, cb){
+
+  var remoteIpAddress = obj
+  if(obj && obj.remoteIpAddress){
+    remoteIpAddress = obj.remoteIpAddress 
+  }  
+
   console.log('[*] Joining communication network...');
   var seqFunction = async.seq(
     util.ClearDirectories,
@@ -269,7 +275,7 @@ function joinCommunicationNetwork(remoteIpAddress, cb){
   seqFunction(result, function(err, res){
     if (err) { return onErr(err); }
     console.log('[*] New communication network started');
-    cb(err, res); 
+    cb(err, obj); 
   });
 }
 
