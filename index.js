@@ -24,18 +24,19 @@ function handleConsensusChoice(){
   prompt.get(['option'], function(err, answer){
     if(answer.option == 1){
       consensus = 'raft'
+      mainLoop()
     } else if (answer.option == 2){
       consensus = 'quorumChain'
-    } else if(answr.option == 5){
+      mainLoop()
+    } else if(answer.option == 5){
       util.KillallGethConstellationNode(function(err, result){
         if (err) { return onErr(err); }
         quorumNetwork = null;
         raftNetwork = null
         communicationNetwork = null;
-        mainLoop();
+        mainLoop()
       })      
     }
-    mainLoop()
   })
 }
 
