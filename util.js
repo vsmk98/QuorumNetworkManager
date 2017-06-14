@@ -204,7 +204,9 @@ function generateNodeKey(result, cb){
   child.stderr.on('data', function(error){
     console.log('ERROR:', error)
   })
-  cb(null, result)
+  setTimeout(function(){
+    cb(null, result)
+  }, 1000)
 }
 
 // TODO: ports shouldn't be hard coded!!!

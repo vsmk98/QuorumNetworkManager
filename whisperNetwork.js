@@ -239,7 +239,7 @@ function startCommunicationNetwork(result, cb){
   let config = {
     folders: ['CommunicationNode', 'CommunicationNode/geth'], 
     "web3IPCHost": './CommunicationNode/geth.ipc',
-    "web3RPCProvider": 'http://localhost:40010'
+    "web3RPCProvider": 'http://localhost:50010'
   }
   networkSetup(config, function(err, commNet){
     if (err) { console.log('ERROR:', err) }
@@ -263,8 +263,8 @@ function joinCommunicationNetwork(remoteIpAddress, cb){
     folders: ['CommunicationNode', 'CommunicationNode/geth'], 
     "managingNodeIpAddress": remoteIpAddress,
     "web3IPCHost": './CommunicationNode/geth.ipc',
-    "web3RPCProvider": 'http://localhost:40010',
-    "enode": "enode://9443bd2c5ccc5978831088755491417fe0c3866537b5e9638bcb6ad34cb9bcc58a9338bb492590ff200a54b43a6a03e4a7e33fa111d0a7f6b7192d1ca050f300@"+remoteIpAddress+":40000"
+    "web3RPCProvider": 'http://localhost:50010',
+    "enode": "enode://9443bd2c5ccc5978831088755491417fe0c3866537b5e9638bcb6ad34cb9bcc58a9338bb492590ff200a54b43a6a03e4a7e33fa111d0a7f6b7192d1ca050f300@"+remoteIpAddress+":50000"
   };
   seqFunction(result, function(err, res){
     if (err) { return onErr(err); }
