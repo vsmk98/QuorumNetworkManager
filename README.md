@@ -127,8 +127,11 @@ Start the QuorumNetworkManager by running `node index.js`.
 # Firewall rules
 
 ```
-Name: geth-communicationNode
+Name: raft-http
 Port: TCP 40000
+
+Name: geth-communicationNode
+Port: TCP 50000
 
 Name: geth-node
 Port: TCP 20000
