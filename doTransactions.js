@@ -30,7 +30,7 @@ function startSubmittingTransactions(){
       submittedCount++;
       web3IPC.eth.sendTransaction(txObj, function(err, txHash){
         if (err) { console.log('Send transaction ERROR:', err); }
-        setTimeout(function(){
+        /*setTimeout(function(){
           web3IPC.eth.getTransaction(txHash, function(err, tx){
             if (err) { console.log('Get transaction ERROR:', err); }
             if(tx == undefined || tx.blockNumber == null){
@@ -40,9 +40,9 @@ function startSubmittingTransactions(){
               confirmedCount++;
             }
           });          
-        }, 5000);
+        }, 60*1000);*/
       });
-    }, 25);
+    }, 2);
   });
 }
 

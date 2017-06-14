@@ -227,6 +227,21 @@ function displayEnode(result, cb){
   })
 }
 
+function unlockAllAccounts(result, cb){
+  console.log('[INFO] Unlocking all accounts ...');
+  async.each(result.web3RPC.eth.accounts, function(account, callback){
+    result.web3IPC.personal.unlockAccount(account, '', 999999, function(err, res){
+      callback(err, res)
+    })
+  }, function(err){
+    if(err){
+      console.log('ERROR:', err)
+    } else {
+      console.log('[INFO] All accounts unlocked')
+    }
+    cb(null, result)
+  })
+}
 
 exports.Hex2a = hex2a;
 exports.ClearDirectories = clearDirectories;
@@ -241,3 +256,4 @@ exports.CreateGenesisBlockConfig = createGenesisBlockConfig
 exports.IsWeb3RPCConnectionAlive = isWeb3RPCConnectionAlive
 exports.GenerateNodeKey = generateNodeKey
 exports.DisplayEnode = displayEnode
+exports.UnlockAllAccounts = unlockAllAccounts

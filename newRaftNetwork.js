@@ -30,6 +30,7 @@ function startNewRaftNetwork(config, cb){
     whisper.StartNetwork,
     startRaftNode,
     util.CreateWeb3Connection,
+    util.UnlockAllAccounts,
     whisper.AddEnodeResponseHandler,
     peerHandler.ListenForNewEnodes,
     whisper.AddEtherResponseHandler,
