@@ -42,6 +42,9 @@ jspm_packages
 
 # Blockchain data files
 Blockchain/raft-snap*
+Blockchain/static-nodes.json
+Blockchain/quorum-raft-state*
+Blockchain/raft-wal*
 Blockchain/geth*
 Blockchain/keystore*
 Blockchain2/geth*
