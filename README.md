@@ -147,6 +147,12 @@ Port: TCP 9000
 
 This section details setting up Cakeshop: https://github.com/jpmorganchase/cakeshop
 
+## Firewall rules
+```
+Name: cakeshop
+Port: TCP 8080
+```
+
 ## Requirements
 
 1. Java 7+ (`sudo apt-get install -y default-jre`)
@@ -159,15 +165,7 @@ From your workspace folder:
 2. `wget https://github.com/jpmorganchase/cakeshop/releases/download/0.9.1/cakeshop-0.9.1-x86_64-linux.war`
 3. `mv cakeshop-0.9.1-x86_64-linux.war cakeshop.war`
 4. `java -jar cakeshop.war example`
-5. `nano data/local/application.properties`
-6. Change `geth.url` to `geth.url=http\://localhost\:20010`
-7. Save and exit (`ctrl + x`, `y`, hit enter)
-
-## Firewall rules
-```
-Name: cakeshop
-Port: TCP 8080
-```
+5. `sed -i 's/geth.url=http\\:\/\/localhost\\:22000/geth.url=http\\:\/\/localhost\\:20010/g' data/local/application.properties`
 
 ## Running
 
