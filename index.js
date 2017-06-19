@@ -7,6 +7,7 @@ var joinNewNetwork = require('./joinNewNetwork.js')
 var rejoinNetork = require('./rejoinNetwork.js')
 var newRaftNetwork = require('./newRaftNetwork.js')
 var joinRaftNetwork = require('./joinRaftNetwork.js')
+var ipAddresses = require('./ipAddress.js')
 
 prompt.start();
 var quorumNetwork = null
@@ -146,12 +147,19 @@ function mainLoop(){
   } else if(localIpAddress && checkForOtherProcesses && consensus == null){
     handleConsensusChoice()
   } else {
-    console.log('Welcome! Before we get started, please enter the IP address '
-      +'other nodes will use to connect to this node.');
-    prompt.get(['localIpAddress'], function (err, answer) {
-      localIpAddress = answer.localIpAddress;
-      mainLoop();
-    });
+    ipAddresses.WhatIsMyIp(function(ip){
+      console.log('Welcome! Before we get started, please enter the IP address '
+        +'other nodes will use to connect to this node.')
+      let schema = [{
+        name: 'localIpAddress',
+        default: ip.publicIp
+      }]
+      prompt.get(schema, function (err, answer) {
+        localIpAddress = answer.localIpAddress
+        console.log('localIpAddress:', localIpAddress)
+        mainLoop()
+      })
+    })
   }
 }
 
