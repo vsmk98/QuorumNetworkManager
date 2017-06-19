@@ -271,8 +271,7 @@ function joinCommunicationNetwork(remoteIpAddress, cb){
   seqFunction(result, function(err, commNet){
     if (err) { return onErr(err); }
     console.log('[*] Communication network started');
-    result.communicationNetwork = commNet
-    cb(err, res); 
+    cb(err, commNet); 
   });
 }
 
