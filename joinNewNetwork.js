@@ -25,6 +25,7 @@ function joinNewQuorumNetwork(config, cb){
     startNode = startQuorumParticipantNode
   }
   
+    //whisper.AddEtherResponseHandler,
   let seqFunction = async.seq(
     util.ClearDirectories,
     util.CreateDirectories,
@@ -225,14 +226,12 @@ function handleJoiningNewQuorumNetwork(localIpAddress, cb){
       config.joinOption = answer.option
 
       whisper.JoinNetwork(config.remoteIpAddress, function(err, result){
-        if (err) { return console(err) }
-        let communicationNetwork = Object.assign({}, result)
-        config.communicationNetwork = communicationNetwork
+        if (err) { return console('ERROR:', err) }
+        config.communicationNetwork = Object.assign({}, result)
         joinNewQuorumNetwork(config, function(err, result){
-          if (err) { return console.log('ERROR', err) }
-          let quorumNetwork = Object.assign({}, result)
+          if (err) { return console.log('ERROR:', err) }
           let networks = {
-            quorumNetwork: quorumNetwork,
+            quorumNetwork: Object.assign({}, result),
             communicationNetwork: config.communicationNetwork
           }
           cb(err, networks)

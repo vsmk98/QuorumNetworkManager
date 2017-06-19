@@ -131,14 +131,11 @@ function handleJoiningRaftNetwork(localIpAddress, cb){
     config.remoteIpAddress = network.ipAddress
     whisper.JoinNetwork(config.remoteIpAddress, function(err, result){
       if (err) { return console(err) }
-      let communicationNetwork = Object.assign({}, result)
-      config.communicationNetwork = communicationNetwork
+      config.communicationNetwork = Object.assign({}, result)
       joinRaftNetwork(config, function(err, result){
         if (err) { return console.log('ERROR', err) }
-        console.log('Network started')
-        config.raftNetwork = Object.assign({}, result)
         let networks = {
-          raftNetwork: config.raftNetwork,
+          raftNetwork: Object.assign({}, result),
           communicationNetwork: config.communicationNetwork
         }
         cb(err, networks)

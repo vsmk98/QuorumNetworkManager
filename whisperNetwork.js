@@ -255,6 +255,7 @@ function joinCommunicationNetwork(remoteIpAddress, cb){
   var seqFunction = async.seq(
     util.ClearDirectories,
     util.CreateDirectories,
+    copyCommunicationNodeKey,
     startCommunicationNode,
     util.CreateWeb3Connection,
     util.ConnectToPeer
@@ -267,18 +268,19 @@ function joinCommunicationNetwork(remoteIpAddress, cb){
     "web3RPCProvider": 'http://localhost:50010',
     "enode": "enode://9443bd2c5ccc5978831088755491417fe0c3866537b5e9638bcb6ad34cb9bcc58a9338bb492590ff200a54b43a6a03e4a7e33fa111d0a7f6b7192d1ca050f300@"+remoteIpAddress+":50000"
   };
-  seqFunction(result, function(err, res){
+  seqFunction(result, function(err, commNet){
     if (err) { return onErr(err); }
-    console.log('[*] New communication network started');
+    console.log('[*] Communication network started');
+    result.communicationNetwork = commNet
     cb(err, res); 
   });
 }
 
 
 exports.StartNetwork = startCommunicationNetwork
-exports.AddEtherResponseHandler = addEtherResponseHandler;
-exports.AddEnodeResponseHandler = addEnodeResponseHandler;
-exports.AddEnodeRequestHandler = addEnodeRequestHandler;
-exports.JoinNetwork = joinCommunicationNetwork;
-exports.GetGenesisBlockConfig = getGenesisBlockConfig;
-exports.RequestSomeEther = requestSomeEther;
+exports.JoinNetwork = joinCommunicationNetwork
+exports.AddEtherResponseHandler = addEtherResponseHandler
+exports.AddEnodeResponseHandler = addEnodeResponseHandler
+exports.AddEnodeRequestHandler = addEnodeRequestHandler
+exports.GetGenesisBlockConfig = getGenesisBlockConfig
+exports.RequestSomeEther = requestSomeEther
