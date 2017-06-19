@@ -255,7 +255,6 @@ function joinCommunicationNetwork(remoteIpAddress, cb){
   var seqFunction = async.seq(
     util.ClearDirectories,
     util.CreateDirectories,
-    copyCommunicationNodeKey,
     startCommunicationNode,
     util.CreateWeb3Connection,
     util.ConnectToPeer

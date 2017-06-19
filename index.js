@@ -156,7 +156,6 @@ function mainLoop(){
       }]
       prompt.get(schema, function (err, answer) {
         localIpAddress = answer.localIpAddress
-        console.log('localIpAddress:', localIpAddress)
         mainLoop()
       })
     })
