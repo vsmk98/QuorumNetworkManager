@@ -12,32 +12,9 @@ This project's goal is to help getting started with a basic Quorum network. Note
 
 Additional functionnality includes (but is not limited to) options regarding adding more blockmakers and voters, using a different consensus mechanism (e.g. switching to raft) as well as performance testing.
 
-## Network topology
-
-It creates a network with 1 block maker + block voter (on the same node) and then allows multiple participant nodes to join.
-
-## Account management
-
-New accounts that are created via `geth` with automatically be seeded with some ether. This is acheived with a whisper message that requests ether from other nodes and as such can easily be extended to work for accounts that are not created via `geth`.
-
-## Constellation - privacy/confidentiality
-
-Nodes in the network will automatically generate constellation keys and broadcast the public key using whisper. This means that this network supports the privacy/confidentiality features of Quorum
-
-## Pausing block making
-
-There is a script `pauseBlockMaking.js` that will pause the blockmaker if no transactions are present. Depending on the use/test case this can greatly aid in node syncing times. Unfortunately there is currently a bug with`--preload` so this script can't be loaded automatically. Here is a workaround:
-
-To pause blockmaking on the network, the following only needs to be done on the node that is acting as the blockmaker:
-
-1. The terminal session that runs the below steps needs to stay open. To help with this, start a new screen (`sudo apt-get install screen` and `screen -S pauseBlockMaker`). 
-2. Run `./attachToLocalQuorumNode.sh` (after the node is started) to connect to the node.
-3. Run `loadScript('pauseBlockMaking.js')`. This should print `-------------loaded pause Blockmaker script`.
-4. Detach from the screen (`Ctrl + a + d`, while pressing `Ctrl` first press `a` and then press `d`)
-
 # Getting started
 
-There are two options to getting started, manually following the below steps (starting at Requirements) or running a script. In summary, both will create the following directory structure:
+There are two options to getting started, option 1: running a script or option 2 manually following the below steps (starting at Requirements). In summary, both will create the following directory structure:
 
 ```
 workspace
@@ -48,26 +25,29 @@ workspace
   ...
 ```
 
-## Running the script
+## Option 1: Running the script
 
 This script `setup.sh` needs to be run from the folder where you want the QuorumNetworkManager to be installed, like your workspace:
 
-1. `wget https://raw.githubusercontent.com/ConsenSys/QuorumNetworkManager/master/setup.sh`
-2. `chmod +x setup.sh`
-3. `./setup.sh`
-4. `source ~/.bashrc`
+1. `mkdir workspace && cd $_`
+2. `wget https://raw.githubusercontent.com/ConsenSys/QuorumNetworkManager/master/setup.sh`
+3. `chmod +x setup.sh`
+4. `./setup.sh`
+5. `source ~/.bashrc`
 
 This will install all the requirements as well as all the below getting started steps
 
-## Requirements
+## Option 2: Installing Manually		
+ 		
+### Requirements
 
 1. go 1.7.3/4/5 (this has to do with go-ethereum not working with go 1.8) - https://golang.org/dl/
 2. Ubuntu 16.04 (this has to do with installing Constellation)
 3. NodeJS v7.10.0+ (tested on v7.10.0) (refer to https://nodejs.org/en/download/package-manager/ for installation)
 
-## Installing Ethereum		
- 		
- NOTE1: There seems to be a problem with web3 if we don't install ethereum, we still need to find the exact package
+### Installing Ethereum
+    
+ NOTE: There seems to be a problem with web3 if we don't install ethereum, we still need to find the exact package
  web3 is missing and simply install that package instead.
   		
  1. `sudo apt-get install software-properties-common`		
@@ -75,9 +55,9 @@ This will install all the requirements as well as all the below getting started 
  3. `sudo apt-get update`		
  4. `sudo apt-get install ethereum`
 
-## Installing Quorum
+### Installing Quorum
 
-NOTE1: We will need to use Quorum's geth, so do a `sudo mv /usr/bin/geth /usr/bin/normalGeth`
+NOTE: We will need to use Quorum's geth, so do a `sudo mv /usr/bin/geth /usr/bin/normalGeth`
 
 Installation guide for https://github.com/jpmorganchase/quorum
 
@@ -90,7 +70,7 @@ NOTE: This should replace your currently installed `geth`.
 5. Add /build/bin to your PATH: `echo "PATH=\$PATH:"$PWD/build/bin >> ~/.bashrc`
 6. `source ~/.bashrc`
 
-## Installing Constellation
+### Installing Constellation
 
 Installation guide for https://github.com/jpmorganchase/constellation
 
@@ -104,7 +84,7 @@ Installation guide for https://github.com/jpmorganchase/constellation
 8. Add ubuntu1604 to your PATH: `echo "PATH=\$PATH:"$PWD/ubuntu1604 >> ~/.bashrc`
 9. `source ~/.bashrc`
 
-## Installing Quorum Genesis
+### Installing Quorum Genesis
 
 Installation guide for https://github.com/davebryson/quorum-genesis
 
@@ -114,7 +94,7 @@ NOTE: the public-key (use ssh-keygen to generate one) of the machine you are wor
 2. `cd quorum-genesis`
 3. `sudo npm install -g`
 
-## Installing the QuorumNetworkManager
+### Installing the QuorumNetworkManager
 
 1. `git clone git@github.com:coeniebeyers/QuorumNetworkManager.git`
 2. `cd QuorumNetworkManager`
@@ -123,6 +103,30 @@ NOTE: the public-key (use ssh-keygen to generate one) of the machine you are wor
 ## Running
 
 Start the QuorumNetworkManager by running `node index.js`. 
+
+### Network topology
+
+<Section still to be completed>
+
+### Account management
+
+New accounts that are created via `geth` with automatically be seeded with some ether. This is acheived with a whisper message that requests ether from other nodes and as such can easily be extended to work for accounts that are not created via `geth`.
+
+### Constellation - privacy/confidentiality
+
+Nodes in the network will automatically generate constellation keys (future releases might broadcast the public key using whisper). This means that this network supports the privacy/confidentiality features of Quorum.
+
+### Pausing block making
+
+There is a script `pauseBlockMaking.js` that will pause the blockmaker if no transactions are present. Depending on the use/test case this can greatly aid in node syncing times. Unfortunately there is currently a bug with`--preload` so this script can't be loaded automatically. Here is a workaround:
+
+To pause blockmaking on the network, the following only needs to be done on the node that is acting as the blockmaker:
+
+1. The terminal session that runs the below steps needs to stay open. To help with this, start a new screen (`sudo apt-get install screen` and `screen -S pauseBlockMaker`). 
+2. Run `./attachToLocalQuorumNode.sh` (after the node is started) to connect to the node.
+3. Run `loadScript('pauseBlockMaking.js')`. This should print `-------------loaded pause Blockmaker script`.
+4. Detach from the screen (`Ctrl + a + d`, while pressing `Ctrl` first press `a` and then press `d`)
+
 
 # Firewall rules
 
