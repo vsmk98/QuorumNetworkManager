@@ -159,7 +159,6 @@ function createQuorumConfig(result, cb){
     makerList += '"'+bm+'",'
   }
   makerList = makerList.slice(0, -1)
-  console.log('result.threshold:', result.threshold)
   var config = '{'
     +'"threshold": '+result.threshold+','
     +'"voters": ['
