@@ -249,7 +249,13 @@ function startCommunicationNetwork(result, cb){
   })
 }
 
-function joinCommunicationNetwork(remoteIpAddress, cb){
+function joinCommunicationNetwork(config, cb){
+
+  let remoteIpAddress = config.remoteIpAddress
+  let remoteEnode = config.remoteEnode
+  if(remoteEnode == null){
+    remoteEnode = "enode://9443bd2c5ccc5978831088755491417fe0c3866537b5e9638bcb6ad34cb9bcc58a9338bb492590ff200a54b43a6a03e4a7e33fa111d0a7f6b7192d1ca050f300@"+remoteIpAddress+":50000"
+  }
 
   console.log('[*] Joining communication network...');
   var seqFunction = async.seq(
@@ -262,10 +268,9 @@ function joinCommunicationNetwork(remoteIpAddress, cb){
 
   var result = {
     folders: ['CommunicationNode', 'CommunicationNode/geth'], 
-    "managingNodeIpAddress": remoteIpAddress,
     "web3IPCHost": './CommunicationNode/geth.ipc',
     "web3RPCProvider": 'http://localhost:50010',
-    "enode": "enode://9443bd2c5ccc5978831088755491417fe0c3866537b5e9638bcb6ad34cb9bcc58a9338bb492590ff200a54b43a6a03e4a7e33fa111d0a7f6b7192d1ca050f300@"+remoteIpAddress+":50000"
+    "enode": remoteEnode
   };
   seqFunction(result, function(err, commNet){
     if (err) { return onErr(err); }
@@ -276,7 +281,7 @@ function joinCommunicationNetwork(remoteIpAddress, cb){
 
 
 exports.StartNetwork = startCommunicationNetwork
-exports.JoinNetwork = joinCommunicationNetwork
+exports.JoinCommunicationNetwork = joinCommunicationNetwork
 exports.AddEtherResponseHandler = addEtherResponseHandler
 exports.AddEnodeResponseHandler = addEnodeResponseHandler
 exports.AddEnodeRequestHandler = addEnodeRequestHandler

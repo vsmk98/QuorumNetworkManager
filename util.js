@@ -210,13 +210,34 @@ function generateNodeKey(result, cb){
 }
 
 // TODO: ports shouldn't be hard coded!!!
+function displayCommunicationEnode(result, cb){
+  if(!result){
+    return cb({error: 'parameter not defined, could not get ip address'}, null)
+  }
+  var options = {encoding: 'utf8', timeout: 10*1000};
+  var child = exec('bootnode -nodekey CommunicationNode/geth/nodekey -writeaddress', options)
+  child.stdout.on('data', function(data){
+    data = data.slice(0, -1)
+    let enode = 'enode://'+data+'@'+result.localIpAddress+':50000'
+    console.log('\nenode:', enode+'\n')
+    result.nodePubKey = data
+    result.enodeList = [enode]
+    cb(null, result)
+  })
+  child.stderr.on('data', function(error){
+    console.log('ERROR:', error)
+    cb(error, null)
+  })
+}
+
+// TODO: ports shouldn't be hard coded!!!
 function displayEnode(result, cb){
   var options = {encoding: 'utf8', timeout: 10*1000};
   var child = exec('bootnode -nodekey Blockchain/geth/nodekey -writeaddress', options)
   child.stdout.on('data', function(data){
     data = data.slice(0, -1)
     let enode = 'enode://'+data+'@'+result.localIpAddress+':20000'
-    console.log('enode:', enode)
+    console.log('\nenode:', enode+'\n')
     result.nodePubKey = data
     result.enodeList = [enode]
     cb(null, result)
@@ -256,4 +277,5 @@ exports.CreateGenesisBlockConfig = createGenesisBlockConfig
 exports.IsWeb3RPCConnectionAlive = isWeb3RPCConnectionAlive
 exports.GenerateNodeKey = generateNodeKey
 exports.DisplayEnode = displayEnode
+exports.DisplayCommunicationEnode = displayCommunicationEnode
 exports.UnlockAllAccounts = unlockAllAccounts

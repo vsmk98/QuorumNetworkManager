@@ -212,10 +212,22 @@ function getConfiguration(result, cb){
 function handleJoiningNewQuorumNetwork(localIpAddress, cb){
   config = {}
   config.localIpAddress = localIpAddress
-  console.log('In order to join an existing network, '
-    + 'please enter the ip address of one of the managing nodes')
-  prompt.get(['ipAddress'], function (err, network) {
-    config.remoteIpAddress = network.ipAddress
+  console.log('In order to join an existing network, please enter either:'+
+    '1) the ip address of the coordinating node'+
+    '2) an enode of any other node on the network')
+  prompt.get(['connection'], function (err, network) {
+
+    if(network && network.connection.indexOf('enode') >= 0){
+      let startOfIpAddress = network.connection.indexOf('@') 
+      let endOfIpAddress = network.connection.indexOf(':') 
+      let ipAddress = network.connection.substring(startOfIpAddress, endOfIpAddress) 
+      console.log('ipAddress:', ipAddress)
+      config.remoteIpAddress = ipAddress
+      config.remoteEnode = network.connection
+    } else {
+      config.remoteIpAddress = network.connection
+      config.remoteEnode = null
+    }
 
     console.log('Please select an option:')
     console.log('0) Join the network as a block maker and block voter')
@@ -225,7 +237,7 @@ function handleJoiningNewQuorumNetwork(localIpAddress, cb){
     prompt.get(['option'], function (err, answer) {
       config.joinOption = answer.option
 
-      whisper.JoinNetwork(config.remoteIpAddress, function(err, result){
+      whisper.JoinCommunicationNetwork(config, function(err, result){
         if (err) { return console('ERROR:', err) }
         config.communicationNetwork = Object.assign({}, result)
         joinNewQuorumNetwork(config, function(err, result){
@@ -234,6 +246,8 @@ function handleJoiningNewQuorumNetwork(localIpAddress, cb){
             quorumNetwork: Object.assign({}, result),
             communicationNetwork: config.communicationNetwork
           }
+          networks.quorumNetwork.localIpAddress = localIpAddress
+          networks.communicationNetwork.localIpAddress = localIpAddress
           cb(err, networks)
         })
       })

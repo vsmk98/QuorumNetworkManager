@@ -220,7 +220,7 @@ function handleRejoiningQuorumNetwork(localIpAddress, cb){
     prompt.get(['option'], function (err, answer) {
       config.joinOption = answer.option
 
-      whisper.JoinNetwork(config.remoteIpAddress, function(err, result){
+      whisper.JoinCommunicationNetwork(config, function(err, result){
         if (err) { return console('ERROR:', err) }
         config.communicationNetwork = Object.assign({}, result)
         rejoinQuorumNetwork(config, function(err, result){
@@ -229,6 +229,8 @@ function handleRejoiningQuorumNetwork(localIpAddress, cb){
             quorumNetwork: Object.assign({}, result),
             communicationNetwork: config.communicationNetwork
           }
+          networks.quorumNetwork.localIpAddress = localIpAddress
+          networks.communicationNetwork.localIpAddress = localIpAddress
           cb(err, networks)
         })
       })

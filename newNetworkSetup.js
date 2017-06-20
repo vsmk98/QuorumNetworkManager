@@ -163,8 +163,10 @@ function handleStartingNewQuorumNetwork(localIpAddress, cb){
     config.quorumNetwork = Object.assign({}, result)
     let networks = {
       quorumNetwork: config.quorumNetwork,
-      communicationNetwork: config.communicationNetwork
+      communicationNetwork: config.quorumNetwork.communicationNetwork
     }
+    networks.quorumNetwork.localIpAddress = localIpAddress
+    networks.communicationNetwork.localIpAddress = localIpAddress
     cb(err, networks)
   })
 }

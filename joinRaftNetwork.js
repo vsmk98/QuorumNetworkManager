@@ -129,7 +129,7 @@ function handleJoiningRaftNetwork(localIpAddress, cb){
     + 'please enter the ip address of the coordinating node')
   prompt.get(['ipAddress'], function (err, network) {
     config.remoteIpAddress = network.ipAddress
-    whisper.JoinNetwork(config.remoteIpAddress, function(err, result){
+    whisper.JoinCommunicationNetwork(config, function(err, result){
       if (err) { return console(err) }
       config.communicationNetwork = Object.assign({}, result)
       joinRaftNetwork(config, function(err, result){

@@ -52,6 +52,7 @@ function handleQuorumConsensus(){
     console.log('4) Enable network statistics');
   }
   console.log('5) killall geth constellation-node');
+  console.log('6) Display communication network connection details')
   console.log('0) Quit');
   prompt.get(['option'], function (err, result) {
     if (err) { return onErr(err); }
@@ -87,6 +88,11 @@ function handleQuorumConsensus(){
         communicationNetwork = null;
         mainLoop();
       });      
+    } else if(result.option == 6){
+      util.DisplayCommunicationEnode(communicationNetwork, function(err, result){
+        if(err){console.log('ERROR:', err)}
+        mainLoop()
+      })
     } else if(result.option == 0){
       console.log('Quiting');
       process.exit(0);
