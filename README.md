@@ -35,6 +35,10 @@ This script `setup.sh` needs to be run from the folder where you want the Quorum
 4. `./setup.sh`
 5. `source ~/.bashrc`
 
+Optionally, run  
+`sed -i '/console.log(val);/d' QuorumNetworkManager/node_modules/web3_ipc/index.js`  
+to get rid of some unwanted logging of `true` when adding peers.
+
 This will install all the requirements as well as all the below getting started steps
 
 ## Option 2: Installing Manually		
@@ -99,6 +103,10 @@ NOTE: the public-key (use ssh-keygen to generate one) of the machine you are wor
 1. `git clone git@github.com:coeniebeyers/QuorumNetworkManager.git`
 2. `cd QuorumNetworkManager`
 3. `npm install`
+
+Optionally, run  
+`sed -i '/console.log(val);/d' node_modules/web3_ipc/index.js`  
+to get rid of some unwanted logging of `true` when adding peers.
 
 ## Running
 
