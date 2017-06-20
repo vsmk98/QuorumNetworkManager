@@ -218,7 +218,7 @@ function displayCommunicationEnode(result, cb){
   child.stdout.on('data', function(data){
     data = data.slice(0, -1)
     let enode = 'enode://'+data+'@'+result.localIpAddress+':50000'
-    console.log('\nenode:', enode+'\n')
+    console.log('\n', enode+'\n')
     result.nodePubKey = data
     result.enodeList = [enode]
     cb(null, result)

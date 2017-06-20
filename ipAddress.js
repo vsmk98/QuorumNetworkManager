@@ -3,7 +3,7 @@ let ip = require('whatismyip')
 let options = {
   url: 'http://checkip.dyndns.org/',
   truncate: '',
-  timeout: 5000,
+  timeout: 10000,
   matchIndex: 0
 }
 

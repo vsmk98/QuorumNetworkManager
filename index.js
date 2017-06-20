@@ -89,6 +89,7 @@ function handleQuorumConsensus(){
         mainLoop();
       });      
     } else if(result.option == 6){
+      console.log('Enode details:')
       util.DisplayCommunicationEnode(communicationNetwork, function(err, result){
         if(err){console.log('ERROR:', err)}
         mainLoop()
@@ -153,6 +154,7 @@ function mainLoop(){
   } else if(localIpAddress && checkForOtherProcesses && consensus == null){
     handleConsensusChoice()
   } else {
+    console.log('Trying to get public ip address, please wait a few seconds...')
     ipAddresses.WhatIsMyIp(function(ip){
       console.log('Welcome! Before we get started, please enter the IP address '
         +'other nodes will use to connect to this node.')
