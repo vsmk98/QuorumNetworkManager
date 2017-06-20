@@ -162,7 +162,6 @@ function getAddress(cb){
 }
 
 function getConfiguration(result, cb){
-  console.log('Getting config for:', result.joinOption)
   if(result.joinOption == 0 || result.joinOption == 1 || result.joinOption == 2){
     console.log('Please enter the configuration for this network:')
     prompt.get(['minimumTimeBetweenBlocks', 'maximumTimeBetweenBlocks']
@@ -214,7 +213,7 @@ function handleJoiningNewQuorumNetwork(localIpAddress, cb){
   config.localIpAddress = localIpAddress
   console.log('\nIn order to join an existing network, please enter either:'+
     '\n1) the ip address of the coordinating node'+
-    '\n2) an enode of any other node on the network')
+    '\n2) a communication network enode of any other node on the network')
   prompt.get(['connection'], function (err, network) {
 
     if(network && network.connection.indexOf('enode') >= 0){
