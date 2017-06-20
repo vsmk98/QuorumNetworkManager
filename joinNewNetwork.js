@@ -212,9 +212,9 @@ function getConfiguration(result, cb){
 function handleJoiningNewQuorumNetwork(localIpAddress, cb){
   config = {}
   config.localIpAddress = localIpAddress
-  console.log('In order to join an existing network, please enter either:'+
-    '1) the ip address of the coordinating node'+
-    '2) an enode of any other node on the network')
+  console.log('\nIn order to join an existing network, please enter either:'+
+    '\n1) the ip address of the coordinating node'+
+    '\n2) an enode of any other node on the network')
   prompt.get(['connection'], function (err, network) {
 
     if(network && network.connection.indexOf('enode') >= 0){
