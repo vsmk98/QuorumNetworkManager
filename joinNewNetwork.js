@@ -218,8 +218,8 @@ function handleJoiningNewQuorumNetwork(localIpAddress, cb){
 
     if(network && network.connection.indexOf('enode') >= 0){
       let startOfIpAddress = network.connection.indexOf('@') 
-      let endOfIpAddress = network.connection.indexOf(':') 
-      let ipAddress = network.connection.substring(startOfIpAddress, endOfIpAddress) 
+      let endOfIpAddress = network.connection.indexOf(':', startOfIpAddress) 
+      let ipAddress = network.connection.substring(startOfIpAddress+1, endOfIpAddress) 
       console.log('ipAddress:', ipAddress)
       config.remoteIpAddress = ipAddress
       config.remoteEnode = network.connection
