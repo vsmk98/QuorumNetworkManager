@@ -8,6 +8,7 @@ let constellation = require('./constellation.js')
 let statistics = require('./networkStatistics.js')
 let peerHandler = require('./peerHandler.js')
 let fundingHandler = require('./fundingHandler.js')
+let ports = require('./config.js').ports
 
 prompt.start()
 
@@ -49,10 +50,10 @@ function startNewQuorumNetwork(config, cb){
       publicKeyFileName: 'node.pub', 
       privateKeyFileName: 'node.key', 
       publicArchKeyFileName: 'nodeArch.pub', 
-      privateArchKeyFileName: 'nodeArch.key', 
+      privateArchKeyFileName: 'nodeArch.key' 
     },
     "web3IPCHost": './Blockchain/geth.ipc',
-    "web3RPCProvider": 'http://localhost:20010'
+    "web3RPCProvider": 'http://localhost:'+ports.gethNodeRPC
   }
   seqFunction(result, function(err, res){
     if (err) { return console.log('ERROR', err) }
@@ -68,6 +69,8 @@ function startQuorumBMAndBVNode(result, cb){
   cmd += ' '+result.blockMakers[0]
   cmd += ' '+result.minBlockTime
   cmd += ' '+result.maxBlockTime
+  cmd += ' '+ports.gethNodeRPC
+  cmd += ' '+ports.gethNode
   let child = exec(cmd, options)
   child.stdout.on('data', function(data){
     cb(null, result)

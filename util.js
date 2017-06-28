@@ -3,6 +3,8 @@ var ps = require('ps-node')
 var fs = require('fs');
 var async = require('async')
 
+var ports = require('./config.js').ports
+
 function killallGethConstellationNode(cb){
   var cmd = 'killall -9';
   cmd += ' geth';
@@ -217,7 +219,8 @@ function displayCommunicationEnode(result, cb){
   var child = exec('bootnode -nodekey CommunicationNode/geth/nodekey -writeaddress', options)
   child.stdout.on('data', function(data){
     data = data.slice(0, -1)
-    let enode = 'enode://'+data+'@'+result.localIpAddress+':50000'
+    let enode = 'enode://'+data+'@'+result.localIpAddress+':'
+      +ports.communicationNode
     console.log('\n', enode+'\n')
     result.nodePubKey = data
     result.enodeList = [enode]
@@ -235,7 +238,7 @@ function displayEnode(result, cb){
   var child = exec('bootnode -nodekey Blockchain/geth/nodekey -writeaddress', options)
   child.stdout.on('data', function(data){
     data = data.slice(0, -1)
-    let enode = 'enode://'+data+'@'+result.localIpAddress+':20000'
+    let enode = 'enode://'+data+'@'+result.localIpAddress+':'+ports.gethNode
     console.log('\nenode:', enode+'\n')
     result.nodePubKey = data
     result.enodeList = [enode]

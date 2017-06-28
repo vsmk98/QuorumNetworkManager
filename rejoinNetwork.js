@@ -8,6 +8,7 @@ let constellation = require('./constellation.js')
 let statistics = require('./networkStatistics.js')
 let peerHandler = require('./peerHandler.js')
 let fundingHandler = require('./fundingHandler.js')
+let ports = require('./config.js').ports
 
 prompt.start()
 
@@ -59,7 +60,7 @@ function rejoinQuorumNetwork(config, cb){
     },
     communicationNetwork: config.communicationNetwork,
     "web3IPCHost": './Blockchain/geth.ipc',
-    "web3RPCProvider": 'http://localhost:20010'
+    "web3RPCProvider": 'http://localhost:'+ports.gethNodeRPC
   }
   seqFunction(result, function(err, res){
     if (err) { return console.log('ERROR', err) }
@@ -76,6 +77,8 @@ function startQuorumBMAndBVNode(result, cb){
   cmd += ' '+result.blockMakers[0]
   cmd += ' '+result.minBlockTime
   cmd += ' '+result.maxBlockTime
+  cmd += ' '+ports.gethNodeRPC
+  cmd += ' '+ports.gethNode
   let child = exec(cmd, options)
   child.stdout.on('data', function(data){
     cb(null, result)
@@ -92,6 +95,8 @@ function startQuorumBMNode(result, cb){
   cmd += ' '+result.blockMakers[0]
   cmd += ' '+result.minBlockTime
   cmd += ' '+result.maxBlockTime
+  cmd += ' '+ports.gethNodeRPC
+  cmd += ' '+ports.gethNode
   let child = exec(cmd, options)
   child.stdout.on('data', function(data){
     cb(null, result)
@@ -108,6 +113,8 @@ function startQuorumBVNode(result, cb){
   cmd += ' '+result.blockVoters[0]
   cmd += ' '+result.minBlockTime
   cmd += ' '+result.maxBlockTime
+  cmd += ' '+ports.gethNodeRPC
+  cmd += ' '+ports.gethNode
   let child = exec(cmd, options)
   child.stdout.on('data', function(data){
     cb(null, result)
@@ -122,6 +129,8 @@ function startQuorumParticipantNode(result, cb){
   console.log('Starting quorum participant node...');
   var options = {encoding: 'utf8', timeout: 100*1000};
   var cmd = './startQuorumParticipantNode.sh';
+  cmd += ' '+ports.gethNodeRPC
+  cmd += ' '+ports.gethNode
   var child = exec(cmd, options);
   child.stdout.on('data', function(data){
     console.log('Started quorum participant node');

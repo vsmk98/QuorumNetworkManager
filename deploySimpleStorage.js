@@ -5,7 +5,7 @@ var simpleSource = 'contract simplestorage { uint public storedData; function si
 var simpleCompiled = web3.eth.compile.solidity(simpleSource);
 var simpleRoot = Object.keys(simpleCompiled)[0];
 var simpleContract = web3.eth.contract(simpleCompiled[simpleRoot].info.abiDefinition);
-var simple = simpleContract.new(42, {from:web3.eth.accounts[0], data: simpleCompiled[simpleRoot].code, gas: 300000, privateFor: ["T4mZaf6EuvNmppEqAlT+j7H9ww8bqduyX0TF2RGk4xQ="]}, function(e, contract) {
+var simple = simpleContract.new(42, {from:web3.eth.accounts[0], data: simpleCompiled[simpleRoot].code, gas: 300000, privateFor: ["KBn3zrFmqVXwoL6yZH+6QjZ/nLdf0+8hDz2pB+cboXU=", "LpTDg32+eNck3tY/iKRCx+ai4Pm2AxztFeCv1/T6RXo="]}, function(e, contract) {
   if (e) {
     console.log("err creating contract", e);
   } else {

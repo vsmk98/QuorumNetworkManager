@@ -4,6 +4,7 @@ var async = require('async');
 
 var events = require('./eventEmitter.js');
 var util = require('./util.js');
+var ports = require('./config.js').ports
 
 // TODO: Maybe check that address is indeed in need of some ether before sending it some
 // TODO: Check from which address to send the ether, for now this defaults to eth.accounts[0]
@@ -215,6 +216,8 @@ function getGenesisBlockConfig(result, cb){
 function startCommunicationNode(result, cb){
   var options = {encoding: 'utf8', timeout: 100*1000};
   var cmd = './startCommunicationNode.sh';
+  cmd += ' '+ports.communicationNodeRPC
+  cmd += ' '+ports.communicationNode
   var child = exec(cmd, options);
   child.stdout.on('data', function(data){
     cb(null, result);
@@ -239,7 +242,7 @@ function startCommunicationNetwork(result, cb){
   let config = {
     folders: ['CommunicationNode', 'CommunicationNode/geth'], 
     "web3IPCHost": './CommunicationNode/geth.ipc',
-    "web3RPCProvider": 'http://localhost:50010'
+    "web3RPCProvider": 'http://localhost:'+ports.communicationNodeRPC
   }
   networkSetup(config, function(err, commNet){
     if (err) { console.log('ERROR:', err) }
@@ -254,7 +257,10 @@ function joinCommunicationNetwork(config, cb){
   let remoteIpAddress = config.remoteIpAddress
   let remoteEnode = config.remoteEnode
   if(remoteEnode == null){
-    remoteEnode = "enode://9443bd2c5ccc5978831088755491417fe0c3866537b5e9638bcb6ad34cb9bcc58a9338bb492590ff200a54b43a6a03e4a7e33fa111d0a7f6b7192d1ca050f300@"+remoteIpAddress+":50000"
+    remoteEnode = "enode://9443bd2c5ccc5978831088755491417fe0c3866537b5e9638bcb6ad34cb9bcc58a9338bb492590ff200a54b43a6a03e4a7e33fa111d0a7f6b7192d1ca050f300@"
+    +remoteIpAddress
+    +":"
+    +ports.communicationNode
   }
 
   console.log('[*] Joining communication network...');
@@ -269,11 +275,11 @@ function joinCommunicationNetwork(config, cb){
   var result = {
     folders: ['CommunicationNode', 'CommunicationNode/geth'], 
     "web3IPCHost": './CommunicationNode/geth.ipc',
-    "web3RPCProvider": 'http://localhost:50010',
+    "web3RPCProvider": 'http://localhost:'+ports.communicationNodeRPC,
     "enode": remoteEnode
   };
   seqFunction(result, function(err, commNet){
-    if (err) { return onErr(err); }
+    if (err) { console.log('ERROR:', err) }
     console.log('[*] Communication network started');
     cb(err, commNet); 
   });
