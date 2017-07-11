@@ -4,6 +4,7 @@ var confirmedCount = 0;
 var submittedCount = 0;
 var failedSubmissions = 0;
 var startTime = new Date().getTime();
+let ports = require('./config.js').ports
 
 function startSubmittingTransactions(){
   var seqFunction = async.seq(
@@ -11,7 +12,7 @@ function startSubmittingTransactions(){
   );
   var result = {
     "web3IPCHost": './Blockchain/geth.ipc',
-    "web3RPCProvider": 'http://localhost:20010',
+    "web3RPCProvider": 'http://localhost:'+ports.gethNodeRPC
   };
   seqFunction(result, function(err, res){
     if (err) { console.log('ERROR:', err); }
