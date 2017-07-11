@@ -9,6 +9,7 @@ let constellation = require('./constellation.js')
 let statistics = require('./networkStatistics.js')
 let peerHandler = require('./peerHandler.js')
 let fundingHandler = require('./fundingHandler.js')
+let ports = require('./config.js').ports
 
 prompt.start()
 
@@ -49,16 +50,16 @@ function startNewRaftNetwork(config, cb){
       configName: 'constellation.config', 
       folderName: 'Constellation', 
       localIpAddress : config.localIpAddress, 
-      localPort : 9000, // TODO: extract this to a config!
+      localPort : ports.constellation,
       remoteIpAddress : null, 
-      remotePort : 9000, // TODO: extract this to a config! 
+      remotePort : ports.constellation,
       publicKeyFileName: 'node.pub', 
       privateKeyFileName: 'node.key', 
       publicArchKeyFileName: 'nodeArch.pub', 
       privateArchKeyFileName: 'nodeArch.key', 
     },
     "web3IPCHost": './Blockchain/geth.ipc',
-    "web3RPCProvider": 'http://localhost:20010'
+    "web3RPCProvider": 'http://localhost:'+ports.gethNodeRPC
   }
   seqFunction(result, function(err, res){
     if (err) { return console.log('ERROR', err) }

@@ -44,9 +44,9 @@ function startNewQuorumNetwork(config, cb){
       configName: 'constellation.config', 
       folderName: 'Constellation', 
       localIpAddress : config.localIpAddress, 
-      localPort : 9000, // TODO: extract this to a config!
+      localPort : ports.constellation,
       remoteIpAddress : null, 
-      remotePort : 9000, // TODO: extract this to a config! 
+      remotePort : ports.constellation,
       publicKeyFileName: 'node.pub', 
       privateKeyFileName: 'node.key', 
       publicArchKeyFileName: 'nodeArch.pub', 
