@@ -107,8 +107,10 @@ function getNewGethAccount(result, cb){
     } 
   });
   child.stderr.on('data', function(error){
-    console.log('ERROR:', error);
-    cb(error, null);
+    if(error.indexOf('No etherbase set and no accounts found as default') < 0){
+      console.log('ERROR:', error);
+      cb(error, null);
+    }
   });
 }
 
