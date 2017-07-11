@@ -3,15 +3,14 @@ set -u
 set -e
 
 geth --datadir Blockchain init quorum-genesis.json &>> /dev/null
+sleep 2
 
-NETID=91351
-
-GLOBAL_ARGS="--networkid $NETID --shh --rpc --rpcaddr 0.0.0.0 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum --nodiscover --raft"
+GLOBAL_ARGS="--raft --shh --rpc --rpcaddr 0.0.0.0 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum"
 
 nohup constellation-node constellation.config &> constellation.log &
 sleep 5
 
-PRIVATE_CONFIG=constellation.config nohup geth --datadir Blockchain $GLOBAL_ARGS --rpcport $1 --rpccorsdomain "*" --port $2 --unlock 0 --password passwords.txt  &> gethNode.log &
+PRIVATE_CONFIG=constellation.config nohup geth --datadir Blockchain $GLOBAL_ARGS --rpcport $1 --port $2 --unlock 0 --password passwords.txt  &> gethNode.log &
 sleep 5
 
 echo "[*] Node started"
