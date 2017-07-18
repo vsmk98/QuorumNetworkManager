@@ -104,6 +104,9 @@ function createStaticNodeFile(enodeList, cb){
   var options = {encoding: 'utf8', timeout: 100*1000};
   let list = ''
   for(let enode of enodeList){
+    if(enode.indexOf('?discport=0') < 0){
+      enode = enode + '?discport=0'
+    }
     list += '"'+enode+'",'
   }
   list = list.slice(0, -1)
