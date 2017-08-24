@@ -47,7 +47,7 @@ This will install all the requirements as well as all the below getting started 
 
 1. go 1.7.3/4/5 (this has to do with go-ethereum not working with go 1.8) - https://golang.org/dl/
 2. Ubuntu 16.04 (this has to do with installing Constellation)
-3. NodeJS v7.10.0+ (tested on v7.10.0) (refer to https://nodejs.org/en/download/package-manager/ for installation)
+3. NodeJS v8.x.x (tested on v8.x.x) (refer to https://nodejs.org/en/download/package-manager/ for installation)
 
 ### Installing Ethereum
     
