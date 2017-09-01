@@ -10,7 +10,7 @@ GLOBAL_ARGS="--raft --shh --rpc --rpcaddr 0.0.0.0 --rpcapi admin,db,eth,debug,mi
 nohup constellation-node constellation.config &> constellation.log &
 sleep 5
 
-PRIVATE_CONFIG=constellation.config nohup geth --datadir Blockchain $GLOBAL_ARGS --rpcport $1 --port $2 --unlock 0 --password passwords.txt  &> gethNode.log &
+PRIVATE_CONFIG=constellation.config nohup geth --datadir Blockchain $GLOBAL_ARGS --rpcport $1 --port $2 --raftport $3 --unlock 0 --password passwords.txt  &> gethNode.log &
 sleep 10
 
 echo "[*] Node started"

@@ -78,6 +78,7 @@ function startRaftNode(result, cb){
   let cmd = './startRaftNode.sh'
   cmd += ' '+ports.gethNodeRPC
   cmd += ' '+ports.gethNode
+  cmd += ' '+ports.raftHttp
   let child = exec(cmd, options)
   child.stdout.on('data', function(data){
     cb(null, result)
