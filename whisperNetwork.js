@@ -315,7 +315,8 @@ function startCommunicationNetwork(result, cb){
     copyCommunicationNodeKey,
     startCommunicationNode,
     util.CreateWeb3Connection,
-    genesisConfigHandler    
+    genesisConfigHandler,
+    staticNodesFileHandler 
   )
 
   let config = {
