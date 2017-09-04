@@ -22,6 +22,7 @@ function startNewRaftNetwork(config, cb){
     util.GenerateNodeKey,    
     util.DisplayEnode,
     getConfiguration,
+    whisper.StaticNodesFileHandler,
     util.GetNewGethAccount,
     addAddressAsBlockMakerAndVoter,
     util.CreateQuorumConfig,
