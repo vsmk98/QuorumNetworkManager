@@ -161,6 +161,8 @@ Port: TCP 9000
 
 This section details setting up Cakeshop: https://github.com/jpmorganchase/cakeshop
 
+Cakeshop is an optional web-based utility that allows one to better "see" what is going on with your network.
+
 ## Firewall rules
 ```
 Name: cakeshop
