@@ -112,6 +112,8 @@ to get rid of some unwanted logging of `true` when adding peers.
 
 Start the QuorumNetworkManager by running `node index.js`. 
 
+Tip: Use `screen -S QNM` in ubuntu to keep the QNM running. Detach from screen with `Ctrl + A + D`.
+
 ### Network topology
 
 <Section still to be completed>
