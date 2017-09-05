@@ -162,6 +162,34 @@ function genesisConfigHandler(result, cb){
   cb(null, result);
 }
 
+function staticNodesFileHandler(result, cb){
+  var web3RPC = result.web3RPC;
+  var web3IPC = result.web3IPC;
+  web3RPC.shh.filter({"topics":["StaticNodes"]}).watch(function(err, msg) {
+    if(err){console.log("ERROR:", err);};
+    var message = null;
+    if(msg && msg.payload){
+      message = util.Hex2a(msg.payload);
+    } 
+    if(message && message.indexOf('request|staticNodes') >= 0){
+      fs.readFile('Blockchain/static-nodes.json', 'utf8', function(err, data){
+        if(err){console.log('ERROR:', err);}   
+        var staticNodes = 'response|staticNodes'+data;
+        var hexString = new Buffer(staticNodes).toString('hex');        
+        web3RPC.shh.post({
+          "topics": ["StaticNodes"],
+          "payload": hexString,
+          "ttl": 10,
+          "workToProve": 1
+        }, function(err, res){
+          if(err){console.log('err', err);}
+        });
+      });
+    }
+  });
+  cb(null, result);
+}
+
 // TODO: Add to and from fields to validate origins
 function getGenesisBlockConfig(result, cb){
 
@@ -213,6 +241,57 @@ function getGenesisBlockConfig(result, cb){
   })
 }
 
+// TODO: Add to and from fields to validate origins
+function getStaticNodesFile(result, cb){
+
+  console.log('[*] Requesting static nodes file. This will block until the other node is online')
+
+  var shh = result.communicationNetwork.web3RPC.shh;
+  
+  var id = shh.newIdentity();
+  var str = "request|staticNodes";
+  var hexString = new Buffer(str).toString('hex');
+
+  var receivedStaticNodesFile = false
+
+  var intervalID = setInterval(function(){
+    if(receivedStaticNodesFile){
+      clearInterval(intervalID)
+    } else {
+      shh.post({
+        "from": id,
+        "topics": ["StaticNodes"],
+        "payload": hexString,
+        "ttl": 10,
+        "workToProve": 1
+      }, function(err, res){
+        if(err){console.log('err', err)}
+      })
+    }
+  }, 5000)
+
+  var filter = shh.filter({"topics":["StaticNodes"]}).watch(function(err, msg) {
+    if(err){console.log("ERROR:", err)}
+    var message = null
+    if(msg && msg.payload){
+      message = util.Hex2a(msg.payload)
+    }
+    if(message && message.indexOf('response|staticNodes') >= 0){
+      console.log('received static nodes file')
+      if(receivedStaticNodesFile == false){
+        receivedStaticNodesFile = true
+        filter.stopWatching()
+        var staticNodesFile = message.replace('response|staticNodes', '').substring(1)
+        staticNodesFile = staticNodesFile.replace(/\\n/g, '')
+        staticNodesFile = staticNodesFile.replace(/\\/g, '')
+        fs.writeFile('Blockchain/static-nodes.json', staticNodesFile, function(err, res){
+          cb(err, result)
+        })
+      }
+    }
+  })
+}
+
 function startCommunicationNode(result, cb){
   var options = {encoding: 'utf8', timeout: 100*1000};
   var cmd = './startCommunicationNode.sh';
@@ -236,7 +315,8 @@ function startCommunicationNetwork(result, cb){
     copyCommunicationNodeKey,
     startCommunicationNode,
     util.CreateWeb3Connection,
-    genesisConfigHandler    
+    genesisConfigHandler,
+    staticNodesFileHandler 
   )
 
   let config = {
@@ -292,4 +372,6 @@ exports.AddEtherResponseHandler = addEtherResponseHandler
 exports.AddEnodeResponseHandler = addEnodeResponseHandler
 exports.AddEnodeRequestHandler = addEnodeRequestHandler
 exports.GetGenesisBlockConfig = getGenesisBlockConfig
+exports.GetStaticNodesFile = getStaticNodesFile
+exports.StaticNodesFileHandler = staticNodesFileHandler
 exports.RequestSomeEther = requestSomeEther

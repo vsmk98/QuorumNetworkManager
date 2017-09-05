@@ -28,7 +28,7 @@ function startNewRaftNetwork(config, cb){
     util.CreateGenesisBlockConfig,
     constellation.CreateNewKeys, 
     constellation.CreateConfig,
-    whisper.StartNetwork,
+    whisper.StartNetwork, // This starts the communication network
     startRaftNode,
     util.CreateWeb3Connection,
     util.UnlockAllAccounts,
