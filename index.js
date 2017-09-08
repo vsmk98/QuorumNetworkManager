@@ -104,6 +104,25 @@ function handleQuorumConsensus(){
   });
 }
 
+function handleNetworkMembership(cb){
+  console.log('Please select an option below:');
+  console.log('1) Allow anyone to connect');
+  console.log('2) [TODO] Allow only people with pre-auth tokens to connect');
+  prompt.get(['option'], function(err, result){
+    if(result.option == 1){
+      cb({
+        networkMembership: 'allowAll'
+      })
+    } else {
+      console.log('This option is still TODO, defaulting to option 1');
+      cb({
+        //networkMembership: 'allowOnlyPreAuth'
+        networkMembership: 'allowAll'
+      })
+    } 
+  })
+}
+
 function handleRaftConsensus(){
   console.log('Please select an option below:');
   console.log('1) Start a new network as the coordinator [WARNING: this clears everything]')
@@ -118,10 +137,16 @@ function handleRaftConsensus(){
         mainLoop()
       })
     } else if(result.option == 2){
-      joinRaftNetwork.HandleJoiningRaftNetwork(localIpAddress, function(err, networks){
-        raftNetwork = networks.raftNetwork
-        communicationNetwork = networks.communicationNetwork
-        mainLoop()
+      handleNetworkMembership(function(res){
+        let obj = {
+          localIpAddress: localIpAddress,
+          networkMembership: res.networkMembership
+        };
+        joinRaftNetwork.HandleJoiningRaftNetwork(localIpAddress, res, function(err, networks){
+          raftNetwork = networks.raftNetwork
+          communicationNetwork = networks.communicationNetwork
+          mainLoop()
+        })
       })
     } else if(result.option == 5){
       util.KillallGethConstellationNode(function(err, result){
