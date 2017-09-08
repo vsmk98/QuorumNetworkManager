@@ -406,6 +406,7 @@ function startCommunicationNetwork(result, cb){
   )
 
   let config = {
+    networkMembership: result.networkMembership,
     folders: ['CommunicationNode', 'CommunicationNode/geth'], 
     "web3IPCHost": './CommunicationNode/geth.ipc',
     "web3RPCProvider": 'http://localhost:'+ports.communicationNodeRPC
