@@ -235,10 +235,9 @@ function displayCommunicationEnode(result, cb){
   })
 }
 
-// TODO: ports shouldn't be hard coded!!!
 function displayEnode(result, cb){
-  var options = {encoding: 'utf8', timeout: 10*1000};
-  var child = exec('bootnode -nodekey Blockchain/geth/nodekey -writeaddress', options)
+  let options = {encoding: 'utf8', timeout: 10*1000};
+  let child = exec('bootnode -nodekey Blockchain/geth/nodekey -writeaddress', options)
   child.stdout.on('data', function(data){
     data = data.slice(0, -1)
     let enode = 'enode://'+data+'@'+result.localIpAddress+':'+ports.gethNode+'?raftport='+ports.raftHttp
