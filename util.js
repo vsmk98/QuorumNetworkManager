@@ -72,6 +72,7 @@ function createWeb3Connection(result, cb){
   let web3IPC = Web3IPC.create(options);
   result.web3IPC = web3IPC;
   // Web3 RPC
+  console.log('Creating new web3RPC provider with:', result.web3RPCProvider)
   let httpProvider = result.web3RPCProvider;
   let Web3RPC = require('web3');
   let web3RPC = new Web3RPC();

@@ -24,7 +24,7 @@ function startNewQuorumNetwork(config, cb){
     util.CreateQuorumConfig,
     util.CreateGenesisBlockConfig,
     startQuorumBMAndBVNode,
-    whisper.StartNetwork,
+    whisper.StartCommunicationNetwork,
     util.CreateWeb3Connection,
     whisper.AddEnodeResponseHandler,
     peerHandler.ListenForNewEnodes,

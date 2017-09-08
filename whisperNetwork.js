@@ -366,7 +366,7 @@ function joinCommunicationNetwork(config, cb){
 }
 
 
-exports.StartNetwork = startCommunicationNetwork
+exports.StartCommunicationNetwork = startCommunicationNetwork
 exports.JoinCommunicationNetwork = joinCommunicationNetwork
 exports.AddEtherResponseHandler = addEtherResponseHandler
 exports.AddEnodeResponseHandler = addEnodeResponseHandler
