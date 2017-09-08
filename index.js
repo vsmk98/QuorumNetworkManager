@@ -143,7 +143,7 @@ function handleRaftConsensus(){
         })
       })
     } else if(result.option == 2){
-      joinRaftNetwork.HandleJoiningRaftNetwork(localIpAddress, res, function(err, networks){
+      joinRaftNetwork.HandleJoiningRaftNetwork(localIpAddress, function(err, networks){
         raftNetwork = networks.raftNetwork
         communicationNetwork = networks.communicationNetwork
         mainLoop()
