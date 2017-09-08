@@ -243,7 +243,7 @@ function displayEnode(result, cb){
     let enode = 'enode://'+data+'@'+result.localIpAddress+':'+ports.gethNode+'?raftport='+ports.raftHttp
     console.log('\nenode:', enode+'\n')
     result.nodePubKey = data
-    result.enodeList = [enode]
+    result.enodeList = [enode] // TODO: investigate why this is a list
     cb(null, result)
   })
   child.stderr.on('data', function(error){
