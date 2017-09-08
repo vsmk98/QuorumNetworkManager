@@ -351,13 +351,13 @@ function requestNetworkMembership(result, cb){
   })
 }
 
-function allowAllNetworkMembershipRequests(msg, payload){
-  console.log('NetworkMembership payload:', payload)
+function allowAllNetworkMembershipRequests(msg, payload, web3RPC){
   console.log('NetworkMembership msg:', msg)
   let payloadTokens = payload.split('|')
+  console.log('NetworkMembership payload:', payloadTokens)
   let coinbase = payloadTokens[0]
   let enode = payloadTokens[1]
-  let whisperId = msg.id
+  let from = msg.from // TODO: This need to be added into a DB.
 
   let responseString = 'response|networkMembership|ACCEPTED';
   let hexString = new Buffer(responseString).toString('hex');        
@@ -365,7 +365,8 @@ function allowAllNetworkMembershipRequests(msg, payload){
     "topics": ["NetworkMembership"],
     "payload": hexString,
     "ttl": 10,
-    "workToProve": 1
+    "workToProve": 1,
+    "to": from
   }, function(err, res){
     if(err){console.log('err', err);}
   });
@@ -383,7 +384,7 @@ function networkMembershipRequestHandler(result, cb){
     } 
     if(message && message.indexOf(request) >= 0){
       if(result.networkMembership == 'allowAll'){
-        allowAllNetworkMembershipRequests(msg, message.replace(request))
+        allowAllNetworkMembershipRequests(msg, message.replace(request, ''), web3RPC)
       } else if(result.networkMembership == 'allowOnlyPreAuth') {
         // TODO
       }
