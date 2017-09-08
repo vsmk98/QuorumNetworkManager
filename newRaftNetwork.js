@@ -21,6 +21,7 @@ function startNewRaftNetwork(config, cb){
     util.CreateDirectories,
     util.GenerateNodeKey,    
     util.DisplayEnode,
+    whisper.StartCommunicationNetwork,
     getConfiguration,
     util.GetNewGethAccount,
     addAddressAsBlockMakerAndVoter, // TODO: investigate removing this
@@ -28,7 +29,6 @@ function startNewRaftNetwork(config, cb){
     util.CreateGenesisBlockConfig,
     constellation.CreateNewKeys, 
     constellation.CreateConfig,
-    whisper.StartCommunicationNetwork,
     startRaftNode,
     util.CreateWeb3Connection,
     util.UnlockAllAccounts,
