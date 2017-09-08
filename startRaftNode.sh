@@ -5,7 +5,7 @@ set -e
 geth --datadir Blockchain init quorum-genesis.json &>> /dev/null
 sleep 5
 
-GLOBAL_ARGS="--raft --shh --rpc --rpcaddr 0.0.0.0 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum"
+GLOBAL_ARGS="--raft --shh --rpc --rpcaddr 0.0.0.0 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft"
 
 nohup constellation-node constellation.config &> constellation.log &
 sleep 5
