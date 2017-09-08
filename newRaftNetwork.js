@@ -41,6 +41,7 @@ function startNewRaftNetwork(config, cb){
 
   let result = {
     localIpAddress: config.localIpAddress,
+    networkMembership: config.networkMembership,
     folders: ['Blockchain', 'Blockchain/geth', 'Constellation'], 
     constellationKeySetup: [
       {folderName: 'Constellation', fileName: 'node'},
