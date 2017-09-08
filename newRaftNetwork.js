@@ -23,12 +23,12 @@ function startNewRaftNetwork(config, cb){
     util.DisplayEnode,
     getConfiguration,
     util.GetNewGethAccount,
-    addAddressAsBlockMakerAndVoter,
+    addAddressAsBlockMakerAndVoter, // TODO: investigate removing this
     util.CreateQuorumConfig,
     util.CreateGenesisBlockConfig,
     constellation.CreateNewKeys, 
     constellation.CreateConfig,
-    whisper.StartNetwork, // This starts the communication network
+    whisper.StartNetwork, // TODO: rename this to StartCommunicationNetwork
     startRaftNode,
     util.CreateWeb3Connection,
     util.UnlockAllAccounts,
@@ -101,7 +101,7 @@ function askForEnode(result, cb){
 }
 
 function createStaticNodeFile(enodeList, cb){
-  var options = {encoding: 'utf8', timeout: 100*1000};
+  let options = {encoding: 'utf8', timeout: 100*1000};
   let list = ''
   for(let enode of enodeList){
     list += '"'+enode+'",'
@@ -132,12 +132,13 @@ function addAddressAsBlockMakerAndVoter(result, cb){
   cb(null, result)
 }
 
-function handleStartingNewRaftNetwork(localIpAddress, cb){
+function handleStartingNewRaftNetwork(options, cb){
   config = {}
-  config.localIpAddress = localIpAddress
+  config.localIpAddress = options.localIpAddress
+  config.networkMembership = options.networkMembership
   startNewRaftNetwork(config, function(err, result){
     if (err) { return console.log('ERROR', err) }
-    console.log('Network started')
+    console.log('[*] Network started')
     config.raftNetwork = Object.assign({}, result)
     let networks = {
       raftNetwork: config.raftNetwork,
