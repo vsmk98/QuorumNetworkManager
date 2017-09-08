@@ -131,22 +131,22 @@ function handleRaftConsensus(){
   console.log('0) Quit');
   prompt.get(['option'], function(err, result){
     if(result.option == 1){
-      newRaftNetwork.HandleStartingNewRaftNetwork(localIpAddress, function(err, networks){
-        raftNetwork = networks.raftNetwork
-        communicationNetwork = networks.communicationNetwork
-        mainLoop()
-      })
-    } else if(result.option == 2){
       handleNetworkMembership(function(res){
-        let obj = {
+        let options = {
           localIpAddress: localIpAddress,
           networkMembership: res.networkMembership
         };
-        joinRaftNetwork.HandleJoiningRaftNetwork(localIpAddress, res, function(err, networks){
+        newRaftNetwork.HandleStartingNewRaftNetwork(options, function(err, networks){
           raftNetwork = networks.raftNetwork
           communicationNetwork = networks.communicationNetwork
           mainLoop()
         })
+      })
+    } else if(result.option == 2){
+      joinRaftNetwork.HandleJoiningRaftNetwork(localIpAddress, res, function(err, networks){
+        raftNetwork = networks.raftNetwork
+        communicationNetwork = networks.communicationNetwork
+        mainLoop()
       })
     } else if(result.option == 5){
       util.KillallGethConstellationNode(function(err, result){
