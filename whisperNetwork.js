@@ -355,8 +355,8 @@ function allowAllNetworkMembershipRequests(msg, payload, web3RPC){
   console.log('NetworkMembership msg:', msg)
   let payloadTokens = payload.split('|')
   console.log('NetworkMembership payload:', payloadTokens)
-  let coinbase = payloadTokens[0]
-  let enode = payloadTokens[1]
+  let coinbase = payloadTokens[1]
+  let enode = payloadTokens[2]
   let from = msg.from // TODO: This need to be added into a DB.
 
   let responseString = 'response|networkMembership|ACCEPTED';
