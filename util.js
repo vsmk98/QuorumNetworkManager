@@ -182,6 +182,7 @@ function createQuorumConfig(result, cb){
 function createGenesisBlockConfig(result, cb){
   var options = {encoding: 'utf8', timeout: 100*1000};
   var child = exec('quorum-genesis', options, function(error, stderr, stdout){
+    result.communicationNetwork.genesisBlockConfigReady = true;
     cb(null, result);
   });
   child.stderr.on('data', function(error){
