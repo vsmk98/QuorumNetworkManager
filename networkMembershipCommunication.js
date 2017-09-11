@@ -1,4 +1,6 @@
-var util = require('./util.js');
+const util = require('./util.js');
+var config = require('./config.js')
+
 
 // TODO: Add to and from fields to validate origins
 function requestNetworkMembership(result, cb){
@@ -11,6 +13,7 @@ function requestNetworkMembership(result, cb){
   let request = "request|networkMembership";
   request += '|'+result.addressList[0] 
   request += '|'+result.enodeList[0]
+  request += '|'+config.identity.nodeName
   let hexString = new Buffer(request).toString('hex');
 
   let receivedNetworkMembership = false
@@ -44,13 +47,33 @@ function requestNetworkMembership(result, cb){
   })
 }
 
-function allowAllNetworkMembershipRequests(msg, payload, web3RPC){
+function addToAddressList(result, address){
+  if(result.addressList){
+    result.addressList.push(coinbase)
+  } else {
+    result.addressList = [coinbase]
+  }
+}
+
+function addToEnodeList(result, enode){
+  if(result.enodeList){
+    result.enodeList.push(enode)
+  } else {
+    result.enodeList = [enode]  
+  }
+}
+
+function allowAllNetworkMembershipRequests(result, msg, payload){
+
+  let web3RPC = result.web3RPC;
   console.log('NetworkMembership msg:', msg)
   let payloadTokens = payload.split('|')
-  console.log('NetworkMembership payload:', payloadTokens)
-  let coinbase = payloadTokens[1]
-  let enode = payloadTokens[2]
-  let from = msg.from // TODO: This need to be added into a DB.
+  addToAddressList(result, payloadTokens[1])
+  addToEnodeList(payloadTokens[2])
+  let peerName = payloadTokens[3]
+  console.log(peerName + ' has joined the network')
+
+  let from = msg.from // TODO: This needs to be added into a DB.
 
   let responseString = 'response|networkMembership|ACCEPTED';
   let hexString = new Buffer(responseString).toString('hex');        
@@ -77,7 +100,7 @@ function networkMembershipRequestHandler(result, cb){
     } 
     if(message && message.indexOf(request) >= 0){
       if(result.networkMembership == 'allowAll'){
-        allowAllNetworkMembershipRequests(msg, message.replace(request, ''), web3RPC)
+        allowAllNetworkMembershipRequests(result, msg, message.replace(request, ''))
       } else if(result.networkMembership == 'allowOnlyPreAuth') {
         // TODO
       }
