@@ -140,6 +140,9 @@ function genesisConfigHandler(result, cb){
   var web3IPC = result.web3IPC;
   web3RPC.shh.filter({"topics":["GenesisConfig"]}).watch(function(err, msg) {
     if(err){console.log("ERROR:", err);};
+    if(result.genesisBlockConfigReady != true){
+      return
+    }
     var message = null;
     if(msg && msg.payload){
       message = util.Hex2a(msg.payload);
