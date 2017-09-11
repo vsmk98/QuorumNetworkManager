@@ -62,9 +62,8 @@ function addAddresslistToQuorumConfig(result, cb){
   result.blockMakers = result.addressList
   result.blockVoters = result.addressList
   if(result.communicationNetwork){
-    console.log('result.communicationNetwork:', result.communicationNetwork)
-    result.blockMakers.push(result.communicationNetwork.addressList) 
-    result.blockVoters.push(result.communicationNetwork.addressList) 
+    result.blockMakers = result.blockMakers.concat(result.communicationNetwork.addressList) 
+    result.blockVoters = result.blockVoters.concat(result.communicationNetwork.addressList) 
   }
   result.threshold = 1 
   cb(null, result)
