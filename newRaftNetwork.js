@@ -13,6 +13,67 @@ let ports = require('./config.js').ports
 
 prompt.start()
 
+function startRaftNode(result, cb){
+  let options = {encoding: 'utf8', timeout: 100*1000}
+  let cmd = './startRaftNode.sh'
+  cmd += ' '+ports.gethNodeRPC
+  cmd += ' '+ports.gethNode
+  cmd += ' '+ports.raftHttp
+  let child = exec(cmd, options)
+  child.stdout.on('data', function(data){
+    cb(null, result)
+  })
+  child.stderr.on('data', function(error){
+    console.log('ERROR:', error)
+    cb(error, null)
+  })
+}
+
+function createStaticNodeFile(enodeList, cb){
+  let options = {encoding: 'utf8', timeout: 100*1000};
+  let list = ''
+  for(let enode of enodeList){
+    list += '"'+enode+'",'
+  }
+  list = list.slice(0, -1)
+  let staticNodes = '['
+    + list
+    +']'
+  
+  fs.writeFile('Blockchain/static-nodes.json', staticNodes, function(err, res){
+    cb(err, res);
+  });
+}
+
+function getConfiguration(result, cb){
+  console.log('Please wait for others to join. Hit any key + enter once done.')
+  prompt.get(['done'] , function (err, answer) {
+    if(result.communicationNetwork){
+      if(result.enodeList){
+        result.enodeList.push(result.communicationNetwork.enodeList) 
+      } else {
+        result.enodeList = [result.communicationNetwork.enodeList]
+      }
+    }
+    console.log('Enode list:', result.enodeList)
+    createStaticNodeFile(result.enodeList, function(err, res){
+      cb(err, result)
+    })
+  })
+}
+
+function addAddresslistToQuorumConfig(result, cb){
+  result.blockMakers = result.addressList
+  result.blockVoters = result.addressList
+  if(result.communicationNetwork){
+    console.log('result.communicationNetwork:', result.communicationNetwork)
+    result.blockMakers.push(result.communicationNetwork.addressList) 
+    result.blockVoters.push(result.communicationNetwork.addressList) 
+  }
+  result.threshold = 1 
+  cb(null, result)
+}
+
 function startNewRaftNetwork(config, cb){
   console.log('[*] Starting new network...')
 
@@ -24,7 +85,7 @@ function startNewRaftNetwork(config, cb){
     whisper.StartCommunicationNetwork,
     getConfiguration,
     util.GetNewGethAccount,
-    addAddressAsBlockMakerAndVoter, // TODO: investigate removing this
+    addAddresslistToQuorumConfig,
     util.CreateQuorumConfig,
     util.CreateGenesisBlockConfig,
     constellation.CreateNewKeys, 
@@ -67,70 +128,6 @@ function startNewRaftNetwork(config, cb){
     console.log('[*] New network started')
     cb(err, res)
   })
-}
-
-function startRaftNode(result, cb){
-  let options = {encoding: 'utf8', timeout: 100*1000}
-  let cmd = './startRaftNode.sh'
-  cmd += ' '+ports.gethNodeRPC
-  cmd += ' '+ports.gethNode
-  cmd += ' '+ports.raftHttp
-  let child = exec(cmd, options)
-  child.stdout.on('data', function(data){
-    cb(null, result)
-  })
-  child.stderr.on('data', function(error){
-    console.log('ERROR:', error)
-    cb(error, null)
-  })
-}
-
-function askForEnode(result, cb){
-  prompt.get(['enode', 'address'] , function (err, answer) {
-    if(err){console.log('ERROR:', err)}
-    if(answer.enode != 0){
-      result.enodeList.push(answer.enode)
-      if(!result.addressList){
-        result.addressList = []
-      }
-      result.addressList.push(answer.address)
-      askForEnode(result, cb)
-    } else {
-      cb(null, result)
-    }
-  })
-}
-
-function createStaticNodeFile(enodeList, cb){
-  let options = {encoding: 'utf8', timeout: 100*1000};
-  let list = ''
-  for(let enode of enodeList){
-    list += '"'+enode+'",'
-  }
-  list = list.slice(0, -1)
-  var staticNodes = '['
-    + list
-    +']'
-  
-  fs.writeFile('Blockchain/static-nodes.json', staticNodes, function(err, res){
-    cb(err, res);
-  });
-}
-
-function getConfiguration(result, cb){
-  console.log('Please enter the enodes and addresses of other nodes, followed by a 0 for enode and 0 for address  when done:')
-  askForEnode(result, function(err, result){
-    createStaticNodeFile(result.enodeList, function(err, res){
-      cb(err, result)
-    })
-  })
-}
-
-function addAddressAsBlockMakerAndVoter(result, cb){
-  result.blockMakers = result.addressList
-  result.blockVoters = result.addressList
-  result.threshold = 1 
-  cb(null, result)
 }
 
 function handleStartingNewRaftNetwork(options, cb){
