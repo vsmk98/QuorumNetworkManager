@@ -1,15 +1,17 @@
-var prompt = require('prompt');
+var prompt = require('prompt')
 
-var util = require('./util.js');
-var statistics = require('./networkStatistics.js');
+var util = require('./util.js')
+var statistics = require('./networkStatistics.js')
 var newNetworkSetup = require('./newNetworkSetup.js')
 var joinNewNetwork = require('./joinNewNetwork.js')
 var rejoinNetork = require('./rejoinNetwork.js')
 var newRaftNetwork = require('./newRaftNetwork.js')
 var joinRaftNetwork = require('./joinRaftNetwork.js')
 var ipAddresses = require('./ipAddress.js')
+var config = require('./config.js')
 
 prompt.start();
+// TODO: These global vars should be refactored
 var quorumNetwork = null
 var raftNetwork = null
 var communicationNetwork = null
@@ -181,14 +183,18 @@ function mainLoop(){
   } else {
     console.log('Trying to get public ip address, please wait a few seconds...')
     ipAddresses.WhatIsMyIp(function(ip){
-      console.log('Welcome! Before we get started, please enter the IP address '
-        +'other nodes will use to connect to this node.')
+      console.log('Welcome! \n\n'
+        +'Please enter the IP address other nodes will use to connect to this node.\n\n '
+        +'Also, please enter a publicly identifyable string for this node to use.')
       let schema = [{
         name: 'localIpAddress',
         default: ip.publicIp
+      }, {
+        name: 'nodeName' // TODO: Add schema to remove unwanted characters etc.
       }]
       prompt.get(schema, function (err, answer) {
         localIpAddress = answer.localIpAddress
+        config.identity.nodeName = answer.nodeName
         mainLoop()
       })
     })
