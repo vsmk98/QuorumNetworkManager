@@ -171,6 +171,9 @@ function staticNodesFileHandler(result, cb){
   var web3IPC = result.web3IPC;
   web3RPC.shh.filter({"topics":["StaticNodes"]}).watch(function(err, msg) {
     if(err){console.log("ERROR:", err);};
+    if(result.staticNodesFileReady != true){
+      return
+    }
     var message = null;
     if(msg && msg.payload){
       message = util.Hex2a(msg.payload);
