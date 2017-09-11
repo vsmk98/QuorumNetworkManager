@@ -1,4 +1,4 @@
-const util = require('./util.js');
+const util = require('./util.js')
 var config = require('./config.js')
 
 
@@ -67,10 +67,9 @@ function addToEnodeList(result, enode){
 function allowAllNetworkMembershipRequests(result, msg, payload){
 
   let web3RPC = result.web3RPC;
-  console.log('NetworkMembership msg:', msg)
   let payloadTokens = payload.split('|')
   addToAddressList(result, payloadTokens[1])
-  addToEnodeList(payloadTokens[2])
+  addToEnodeList(result, payloadTokens[2])
   let peerName = payloadTokens[3]
   console.log(peerName + ' has joined the network')
 
