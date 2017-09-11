@@ -184,8 +184,8 @@ function mainLoop(){
     console.log('Trying to get public ip address, please wait a few seconds...')
     ipAddresses.WhatIsMyIp(function(ip){
       console.log('Welcome! \n\n'
-        +'Please enter the IP address other nodes will use to connect to this node.\n\n '
-        +'Also, please enter a publicly identifyable string for this node to use.')
+        +'Please enter the IP address other nodes will use to connect to this node. \n\n'
+        +'Also, please enter a publicly identifyable string for this node to use.\n\n')
       let schema = [{
         name: 'localIpAddress',
         default: ip.publicIp
