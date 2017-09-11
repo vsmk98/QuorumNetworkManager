@@ -43,6 +43,7 @@ function requestNetworkMembership(result, cb){
       receivedNetworkMembership = true
       let messageTokens = message.split('|')
       console.log('[*] Network membership:', messageTokens[2])
+      cb(null, result)
     }
   })
 }
