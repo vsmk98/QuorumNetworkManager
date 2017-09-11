@@ -49,9 +49,9 @@ function requestNetworkMembership(result, cb){
 
 function addToAddressList(result, address){
   if(result.addressList){
-    result.addressList.push(coinbase)
+    result.addressList.push(address)
   } else {
-    result.addressList = [coinbase]
+    result.addressList = [address]
   }
 }
 
