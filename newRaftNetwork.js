@@ -49,14 +49,10 @@ function getConfiguration(result, cb){
   console.log('Please wait for others to join. Hit any key + enter once done.')
   prompt.get(['done'] , function (err, answer) {
     if(result.communicationNetwork){
-      if(result.enodeList){
-        result.enodeList.push(result.communicationNetwork.enodeList) 
-      } else {
-        result.enodeList = [result.communicationNetwork.enodeList]
-      }
+      result.enodeList = result.enodeList.concat(result.communicationNetwork.enodeList) 
     }
-    console.log('Enode list:', result.enodeList)
     createStaticNodeFile(result.enodeList, function(err, res){
+      result.communicationNetwork.staticNodesFileReady = true
       cb(err, result)
     })
   })
