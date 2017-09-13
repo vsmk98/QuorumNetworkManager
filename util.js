@@ -73,10 +73,13 @@ function createWeb3Connection(result, cb){
   result.web3IPC = web3IPC;
   // Web3 RPC
   let httpProvider = result.web3RPCProvider;
-  let Web3RPC = require('web3Quorum');
-  let web3RPC = new Web3RPC();
-  web3RPC.setProvider(new web3RPC.providers.HttpProvider(httpProvider));
+  let Web3RPC = require('web3');
+  let web3RPC = new Web3RPC(new Web3RPC.providers.HttpProvider(httpProvider));
   result.web3RPC = web3RPC;
+  // Web3 RPC Quorum
+  let Web3RPCQuorum = require('web3Quorum');
+  let web3RPCQuorum = new Web3RPCQuorum(new Web3RPCQuorum.providers.HttpProvider(httpProvider));
+  result.web3RPCQuorum = web3RPCQuorum;
   cb(null, result);
 }
 
