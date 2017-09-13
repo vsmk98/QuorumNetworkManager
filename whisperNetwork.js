@@ -5,6 +5,7 @@ var async = require('async');
 var events = require('./eventEmitter.js');
 var util = require('./util.js');
 var ports = require('./config.js').ports
+var networkMembership = require('./networkMembershipCommunication.js');
 
 // TODO: Maybe check that address is indeed in need of some ether before sending it some
 // TODO: Check from which address to send the ether, for now this defaults to eth.accounts[0]
@@ -139,6 +140,9 @@ function genesisConfigHandler(result, cb){
   var web3IPC = result.web3IPC;
   web3RPC.shh.filter({"topics":["GenesisConfig"]}).watch(function(err, msg) {
     if(err){console.log("ERROR:", err);};
+    if(result.genesisBlockConfigReady != true){
+      return
+    }
     var message = null;
     if(msg && msg.payload){
       message = util.Hex2a(msg.payload);
@@ -167,6 +171,9 @@ function staticNodesFileHandler(result, cb){
   var web3IPC = result.web3IPC;
   web3RPC.shh.filter({"topics":["StaticNodes"]}).watch(function(err, msg) {
     if(err){console.log("ERROR:", err);};
+    if(result.staticNodesFileReady != true){
+      return
+    }
     var message = null;
     if(msg && msg.payload){
       message = util.Hex2a(msg.payload);
@@ -315,11 +322,13 @@ function startCommunicationNetwork(result, cb){
     copyCommunicationNodeKey,
     startCommunicationNode,
     util.CreateWeb3Connection,
+    networkMembership.NetworkMembershipRequestHandler,
     genesisConfigHandler,
     staticNodesFileHandler 
   )
 
   let config = {
+    networkMembership: result.networkMembership,
     folders: ['CommunicationNode', 'CommunicationNode/geth'], 
     "web3IPCHost": './CommunicationNode/geth.ipc',
     "web3RPCProvider": 'http://localhost:'+ports.communicationNodeRPC
@@ -366,12 +375,13 @@ function joinCommunicationNetwork(config, cb){
 }
 
 
-exports.StartNetwork = startCommunicationNetwork
+exports.StartCommunicationNetwork = startCommunicationNetwork
 exports.JoinCommunicationNetwork = joinCommunicationNetwork
 exports.AddEtherResponseHandler = addEtherResponseHandler
 exports.AddEnodeResponseHandler = addEnodeResponseHandler
 exports.AddEnodeRequestHandler = addEnodeRequestHandler
 exports.GetGenesisBlockConfig = getGenesisBlockConfig
+exports.RequestNetworkMembership = networkMembership.RequestNetworkMembership
 exports.GetStaticNodesFile = getStaticNodesFile
 exports.StaticNodesFileHandler = staticNodesFileHandler
 exports.RequestSomeEther = requestSomeEther

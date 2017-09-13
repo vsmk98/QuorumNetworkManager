@@ -12,6 +12,6 @@ nohup constellation-node constellation.config &> constellation.log &
 sleep 5
 
 PRIVATE_CONFIG=constellation.config nohup geth --datadir Blockchain $GLOBAL_ARGS --rpcport $5 --rpccorsdomain "*" --port $6 --voteaccount $1 --votepassword "" --blockmakeraccount $2 --blockmakerpassword "" --singleblockmaker --minblocktime $3 --maxblocktime $4 &> gethNode.log &
-sleep 5
+sleep 10
 
 echo "[*] Node started"

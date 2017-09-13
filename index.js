@@ -1,15 +1,17 @@
-var prompt = require('prompt');
+var prompt = require('prompt')
 
-var util = require('./util.js');
-var statistics = require('./networkStatistics.js');
+var util = require('./util.js')
+var statistics = require('./networkStatistics.js')
 var newNetworkSetup = require('./newNetworkSetup.js')
 var joinNewNetwork = require('./joinNewNetwork.js')
 var rejoinNetork = require('./rejoinNetwork.js')
 var newRaftNetwork = require('./newRaftNetwork.js')
 var joinRaftNetwork = require('./joinRaftNetwork.js')
 var ipAddresses = require('./ipAddress.js')
+var config = require('./config.js')
 
 prompt.start();
+// TODO: These global vars should be refactored
 var quorumNetwork = null
 var raftNetwork = null
 var communicationNetwork = null
@@ -104,6 +106,25 @@ function handleQuorumConsensus(){
   });
 }
 
+function handleNetworkMembership(cb){
+  console.log('Please select an option below:');
+  console.log('1) Allow anyone to connect');
+  console.log('2) [TODO] Allow only people with pre-auth tokens to connect');
+  prompt.get(['option'], function(err, result){
+    if(result.option == 1){
+      cb({
+        networkMembership: 'allowAll'
+      })
+    } else {
+      console.log('This option is still TODO, defaulting to option 1');
+      cb({
+        //networkMembership: 'allowOnlyPreAuth'
+        networkMembership: 'allowAll'
+      })
+    } 
+  })
+}
+
 function handleRaftConsensus(){
   console.log('Please select an option below:');
   console.log('1) Start a new network as the coordinator [WARNING: this clears everything]')
@@ -112,10 +133,16 @@ function handleRaftConsensus(){
   console.log('0) Quit');
   prompt.get(['option'], function(err, result){
     if(result.option == 1){
-      newRaftNetwork.HandleStartingNewRaftNetwork(localIpAddress, function(err, networks){
-        raftNetwork = networks.raftNetwork
-        communicationNetwork = networks.communicationNetwork
-        mainLoop()
+      handleNetworkMembership(function(res){
+        let options = {
+          localIpAddress: localIpAddress,
+          networkMembership: res.networkMembership
+        };
+        newRaftNetwork.HandleStartingNewRaftNetwork(options, function(err, networks){
+          raftNetwork = networks.raftNetwork
+          communicationNetwork = networks.communicationNetwork
+          mainLoop()
+        })
       })
     } else if(result.option == 2){
       joinRaftNetwork.HandleJoiningRaftNetwork(localIpAddress, function(err, networks){
@@ -156,14 +183,18 @@ function mainLoop(){
   } else {
     console.log('Trying to get public ip address, please wait a few seconds...')
     ipAddresses.WhatIsMyIp(function(ip){
-      console.log('Welcome! Before we get started, please enter the IP address '
-        +'other nodes will use to connect to this node.')
+      console.log('Welcome! \n\n'
+        +'Please enter the IP address other nodes will use to connect to this node. \n\n'
+        +'Also, please enter a publicly identifyable string for this node to use.\n\n')
       let schema = [{
         name: 'localIpAddress',
         default: ip.publicIp
+      }, {
+        name: 'nodeName' // TODO: Add schema to remove unwanted characters etc.
       }]
       prompt.get(schema, function (err, answer) {
         localIpAddress = answer.localIpAddress
+        config.identity.nodeName = answer.nodeName
         mainLoop()
       })
     })

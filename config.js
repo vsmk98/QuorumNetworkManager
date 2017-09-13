@@ -10,4 +10,8 @@ config.ports.raftHttp = config.ports.gethNode + 20000  // This is a requirement 
 config.ports.devp2p = 30303
 config.ports.constellation = 9000
 
+config.identity = {}
+config.identity.nodeName = null
+config.identity.whisperId = null
+
 module.exports = config

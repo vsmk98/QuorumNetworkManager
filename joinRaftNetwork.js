@@ -23,9 +23,10 @@ function joinRaftNetwork(config, cb){
     displayGethAccount,
     util.GenerateNodeKey,    
     util.DisplayEnode,
-    //getConfiguration,
+    //getConfiguration, // TODO: Remove this
     constellation.CreateNewKeys, 
     constellation.CreateConfig,
+    whisper.RequestNetworkMembership,
     whisper.GetGenesisBlockConfig,
     whisper.GetStaticNodesFile,
     startRaftNode,

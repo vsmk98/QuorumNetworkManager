@@ -72,6 +72,7 @@ function createWeb3Connection(result, cb){
   let web3IPC = Web3IPC.create(options);
   result.web3IPC = web3IPC;
   // Web3 RPC
+  console.log('Creating new web3RPC provider with:', result.web3RPCProvider)
   let httpProvider = result.web3RPCProvider;
   let Web3RPC = require('web3');
   let web3RPC = new Web3RPC();
@@ -181,6 +182,7 @@ function createQuorumConfig(result, cb){
 function createGenesisBlockConfig(result, cb){
   var options = {encoding: 'utf8', timeout: 100*1000};
   var child = exec('quorum-genesis', options, function(error, stderr, stdout){
+    result.communicationNetwork.genesisBlockConfigReady = true;
     cb(null, result);
   });
   child.stderr.on('data', function(error){
@@ -234,16 +236,15 @@ function displayCommunicationEnode(result, cb){
   })
 }
 
-// TODO: ports shouldn't be hard coded!!!
 function displayEnode(result, cb){
-  var options = {encoding: 'utf8', timeout: 10*1000};
-  var child = exec('bootnode -nodekey Blockchain/geth/nodekey -writeaddress', options)
+  let options = {encoding: 'utf8', timeout: 10*1000};
+  let child = exec('bootnode -nodekey Blockchain/geth/nodekey -writeaddress', options)
   child.stdout.on('data', function(data){
     data = data.slice(0, -1)
     let enode = 'enode://'+data+'@'+result.localIpAddress+':'+ports.gethNode+'?raftport='+ports.raftHttp
     console.log('\nenode:', enode+'\n')
     result.nodePubKey = data
-    result.enodeList = [enode]
+    result.enodeList = [enode] // TODO: investigate why this is a list
     cb(null, result)
   })
   child.stderr.on('data', function(error){
