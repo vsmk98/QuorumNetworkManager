@@ -184,16 +184,13 @@ function existingRaftNetworkMembership(result, cb){
     if(message && message.indexOf(request) >= 0){
       if(result.networkMembership == 'allowAll'){
         let messageTokens = message.split('|')
-        console.log('messageTokens:', messageTokens)
         let peerName = messageTokens[4]
-        console.log(peerName + ' has joined the network')
         let from = msg.from // TODO: This needs to be added into a DB.
         let peerEnode = messageTokens[3]
-        console.log('peerEnode:', peerEnode)
         web3RPCQuorum.raft.addPeer(peerEnode, function(err, raftID){ 
           if(err){console.log('addPeer ERROR:', err)}
-          console.log('raftID:', raftID)
-          let responseString = 'response|existingRaftNetworkMembership|ACCEPTED|'+raftID;
+          console.log(peerName + ' has joined the network with raftID: '+raftID)
+          let responseString = 'response|existingRaftNetworkMembership|ACCEPTED|'+raftID
           postMessage(commWeb3RPC, from, responseString)
         })
       } else if(result.networkMembership == 'allowOnlyPreAuth') {
