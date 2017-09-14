@@ -29,7 +29,6 @@ function joinRaftNetwork(config, cb){
     whisper.GetStaticNodesFile,
     startRaftNode,
     util.CreateWeb3Connection,
-    util.UnlockAllAccounts,
     whisper.AddEnodeResponseHandler,
     peerHandler.ListenForNewEnodes,
     whisper.AddEtherResponseHandler,
