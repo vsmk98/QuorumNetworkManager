@@ -21,6 +21,7 @@ function joinRaftNetwork(config, cb){
     util.CreateDirectories,
     util.GetNewGethAccount,
     util.GenerateNodeKey,    
+    util.DisplayEnode,
     constellation.CreateNewKeys, 
     constellation.CreateConfig,
     whisper.RequestExistingNetworkMembership,
