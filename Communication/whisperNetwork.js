@@ -5,7 +5,7 @@ var async = require('async');
 var events = require('../eventEmitter.js');
 var util = require('../util.js');
 var ports = require('../config.js').ports
-var networkMembership = require('./networkMembershipCommunication.js');
+var networkMembership = require('./networkMembership.js');
 
 // TODO: Maybe check that address is indeed in need of some ether before sending it some
 // TODO: Check from which address to send the ether, for now this defaults to eth.accounts[0]
