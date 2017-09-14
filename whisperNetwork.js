@@ -36,15 +36,22 @@ function addEtherResponseHandler(result, cb){
     }
     if(message && message.indexOf('request|ether|') >= 0){
       var address = message.substring('request|ether|'.length+1);
-      
-      var transaction = {
-        from: web3RPC.eth.accounts[0],
-        to: address,
-        value: web3RPC.toWei(1, 'ether')
-      };
-      web3RPC.eth.sendTransaction(transaction, function(err, res){
-        if(err){console.log('err', err);}
-      });
+
+      if(web3RPC.eth.accounts && web3RPC.eth.accounts.length > 0){  
+        web3RPC.eth.getBalance(web3RPC.eth.accounts[0], function(err, balance){
+          console.log('balance:', balance)
+          if(parseInt(balance.toString()) > 0){
+            var transaction = {
+              from: web3RPC.eth.accounts[0],
+              to: address,
+              value: web3RPC.toWei(1, 'ether')
+            };
+            web3RPC.eth.sendTransaction(transaction, function(err, res){
+              if(err){console.log('err', err);}
+            });
+          }
+        })
+      }           
     }
   });
   cb(null, result);

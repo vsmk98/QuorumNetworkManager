@@ -32,8 +32,7 @@ function joinRaftNetwork(config, cb){
     whisper.AddEnodeResponseHandler,
     peerHandler.ListenForNewEnodes,
     whisper.AddEtherResponseHandler,
-    fundingHandler.MonitorAccountBalances,
-    statistics.Setup
+    fundingHandler.MonitorAccountBalances
   )
 
   let result = {
