@@ -42,7 +42,7 @@ function requestExistingNetworkMembership(result, cb){
       receivedNetworkMembership = true
       let messageTokens = message.split('|')
       console.log('[*] Network membership:', messageTokens[2])
-      result.raftID = messageTokens[3]
+      result.communicationNetwork.raftID = messageTokens[3]
       cb(null, result)
     }
   })
