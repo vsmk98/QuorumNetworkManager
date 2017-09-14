@@ -172,8 +172,9 @@ function postMessage(connection, to, responseString){
 function existingRaftNetworkMembership(result, cb){
   let request = 'request|existingRaftNetworkMembership'
 
-  let web3RPC = result.web3RPC;
-  let commWeb3RPC = result.communicationNetwork.web3RPC;
+  let web3RPC = result.web3RPC
+  let commWeb3RPC = result.communicationNetwork.web3RPC
+  let web3RPCQuorum = result.web3RPCQuorum
   commWeb3RPC.shh.filter({"topics":["NetworkMembership"]}).watch(function(err, msg) {
     if(err){console.log("ERROR:", err);};
     let message = null;
@@ -192,7 +193,7 @@ function existingRaftNetworkMembership(result, cb){
         web3RPCQuorum.raft.addPeer(peerEnode, function(err, raftID){ 
           if(err){console.log('addPeer ERROR:', err)}
           console.log('raftID:', raftID)
-          let responseString = 'response|existingRaftNetworkMembership|ACCEPTED'+raftID;
+          let responseString = 'response|existingRaftNetworkMembership|ACCEPTED|'+raftID;
           postMessage(commWeb3RPC, from, responseString)
         })
       } else if(result.networkMembership == 'allowOnlyPreAuth') {
