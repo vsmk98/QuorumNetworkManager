@@ -92,7 +92,8 @@ function startNewRaftNetwork(config, cb){
     peerHandler.ListenForNewEnodes,
     whisper.AddEtherResponseHandler,
     fundingHandler.MonitorAccountBalances,
-    statistics.Setup
+    statistics.Setup,
+    whisper.ExistingRaftNetworkMembership
   )
 
   let result = {

@@ -7,6 +7,7 @@ var joinNewNetwork = require('./joinNewNetwork.js')
 var rejoinNetork = require('./rejoinNetwork.js')
 var newRaftNetwork = require('./newRaftNetwork.js')
 var joinRaftNetwork = require('./joinRaftNetwork.js')
+var joinExistingRaftNetwork = require('./joinExistingRaftNetwork.js')
 var ipAddresses = require('./ipAddress.js')
 var config = require('./config.js')
 
@@ -129,6 +130,8 @@ function handleRaftConsensus(){
   console.log('Please select an option below:');
   console.log('1) Start a new network as the coordinator [WARNING: this clears everything]')
   console.log('2) Start a new network as a non-coordinator [WARNING: this clears everything]')
+  console.log('3) Join already running raft network [WARNING: this clears everything]')
+  console.log('4) TODO: Start whisper services and attach to already running node')
   console.log('5) killall geth constellation-node');
   console.log('0) Quit');
   prompt.get(['option'], function(err, result){
@@ -150,6 +153,15 @@ function handleRaftConsensus(){
         communicationNetwork = networks.communicationNetwork
         mainLoop()
       })
+    } else if(result.option == 3){
+      joinExistingRaftNetwork.HandleJoiningRaftNetwork(localIpAddress, function(err, networks){
+        raftNetwork = networks.raftNetwork
+        communicationNetwork = networks.communicationNetwork
+        mainLoop()
+      })
+    } else if(result.option == 4){
+      console.log('This is stil on the TODO list')
+      mainLoop()
     } else if(result.option == 5){
       util.KillallGethConstellationNode(function(err, result){
         if (err) { return onErr(err) }
