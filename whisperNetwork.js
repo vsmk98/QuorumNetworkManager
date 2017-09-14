@@ -39,7 +39,9 @@ function addEtherResponseHandler(result, cb){
 
       if(web3RPC.eth.accounts && web3RPC.eth.accounts.length > 0){  
         web3RPC.eth.getBalance(web3RPC.eth.accounts[0], function(err, balance){
-          if(parseInt(balance.toString()) > 1000000000000000000){
+          let stringBalance = balance.toString()
+          let intBalance = parseInt(stringBalance)
+          if(intBalance > 0){
             var transaction = {
               from: web3RPC.eth.accounts[0],
               to: address,
