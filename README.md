@@ -1,7 +1,7 @@
 # Contents
 
 1. Introduction & Additional functionality
-2. Getting started
+2. Getting started & Running
 3. Firewall rules
 4. Cakeshop
 5. Performance analysis
@@ -41,7 +41,7 @@ to get rid of some unwanted logging of `true` when adding peers.
 
 This will install all the requirements as well as all the below getting started steps
 
-## Option 2: Installing Manually		
+## OR | Option 2: Installing Manually		
  		
 ### Requirements
 
@@ -113,6 +113,225 @@ to get rid of some unwanted logging of `true` when adding peers.
 Start the QuorumNetworkManager by running `node index.js`. 
 
 Tip: Use `screen -S QNM` in ubuntu to keep the QNM running. Detach from screen with `Ctrl + A + D`.
+
+### Starting a raft network
+
+Raft supports two modes of starting/joining the network, 1) during the initial setup phase, and 2) afterwords. 
+
+Consider the scenario where you have 3 nodes (node1, node2, and node3) in total, 2 will be part of the initial setup and 1 will be added later. 
+
+#### Initial setup phase
+
+We will pick node 1 to coordinate the initial setup phase. Run the following on node 1
+
+```
+$ node index.js 
+Trying to get public ip address, please wait a few seconds...
+Welcome! 
+
+Please enter the IP address other nodes will use to connect to this node. 
+
+Also, please enter a publicly identifyable string for this node to use.
+```
+Next, check that the below ip address is the one you want other nodes to connect to
+```
+prompt: localIpAddress:  (192.168.0.100) 
+```
+Enter a node name to identify this node
+```
+prompt: nodeName:  node1
+```
+Next, select option 1 to start a raft network
+```
+Please select an option:
+1) Raft
+2) QuorumChain
+5) Kill all geth and constellation
+prompt: option:  1
+```
+Select option 1, as this is the coordinating node
+```
+Please select an option below:
+1) Start a new network as the coordinator [WARNING: this clears everything]
+2) Start a new network as a non-coordinator [WARNING: this clears everything]
+3) Join already running raft network [WARNING: this clears everything]
+4) TODO: Start whisper services and attach to already running node
+5) killall geth constellation-node
+0) Quit
+prompt: option:  1
+```
+Select option 1 to allow anyone to connect
+```
+Please select an option below:
+1) Allow anyone to connect
+2) [TODO] Allow only people with pre-auth tokens to connect
+prompt: option:  1
+[*] Starting new network...
+Generating node key
+
+enode: enode://9dea0f5ddae8be3ba8a6546c31aa47bedd7bc8a19d6f9ff8ae23524e8d71dcbd246be29e74077aa87d86cd98bb72402d5944fd42b92c1a132cf36d0a0dde3a1f@192.168.0.100:20000?raftport=40000
+
+[*] Starting communication network...
+[*] New communication network started
+Please wait for others to join. Hit any key + enter once done.
+prompt: done:  
+```
+At this point we need to switch to node 2 
+```
+$ node index.js 
+Trying to get public ip address, please wait a few seconds...
+Welcome! 
+
+Please enter the IP address other nodes will use to connect to this node. 
+
+Also, please enter a publicly identifyable string for this node to use.
+
+
+prompt: localIpAddress:  (192.168.0.101) 
+prompt: nodeName:  node2
+Please select an option:
+1) Raft
+2) QuorumChain
+5) Kill all geth and constellation
+prompt: option: 1
+```
+Note we pick option 2 here:
+```
+Please select an option below:
+1) Start a new network as the coordinator [WARNING: this clears everything]
+2) Start a new network as a non-coordinator [WARNING: this clears everything]
+3) Join already running raft network [WARNING: this clears everything]
+4) TODO: Start whisper services and attach to already running node
+5) killall geth constellation-node
+0) Quit
+prompt: option:  2
+```
+Next, we need to enter the ip address of the coordinating node, node1:
+```
+In order to join the network, please enter the ip address of the coordinating node
+prompt: ipAddress:  192.168.0.100
+[*] Joining communication network...
+true
+[*] Communication network started
+[*] Starting new network...
+Account: 0x921ff462ae37f67b5feb1d7201f4494819e9c28c
+Generating node key
+
+enode: enode://bc2d0b485b925ae3234f7b67861bcbbfc48550056d4ce0948ef1654518cab3e5fa987c73034f257b6142de7b64316b90de1376fc8ca9e6e916422d676a68b539@192.168.0.101:20000?raftport=40000
+
+[*] Requesting network membership. This will block until the other node responds
+```
+Back on node1, we will see the following after a couple of seconds:
+```
+node2 has joined the network
+```
+and node2 will display:
+```
+[*] Network membership: ACCEPTED
+[*] Requesting genesis block config. This will block until the other node is online
+```
+Next, hit any key + enter on node 1:
+```
+prompt: done:  node2 has joined the network
+p
+[*] Creating genesis config...
+[INFO] Unlocking all accounts ...
+true
+[INFO] All accounts unlocked
+[*] New network started
+[*] Network started
+Please select an option below:
+1) Start a new network as the coordinator [WARNING: this clears everything]
+2) Start a new network as a non-coordinator [WARNING: this clears everything]
+3) Join already running raft network [WARNING: this clears everything]
+4) TODO: Start whisper services and attach to already running node
+5) killall geth constellation-node
+0) Quit
+prompt: option: 
+```
+node2 will output:
+```
+received genesis config
+[*] Requesting static nodes file. This will block until the other node is online
+received static nodes file
+[INFO] Unlocking all accounts ...
+true
+[INFO] All accounts unlocked
+[*] New network started
+Please select an option below:
+1) Start a new network as the coordinator [WARNING: this clears everything]
+2) Start a new network as a non-coordinator [WARNING: this clears everything]
+3) Join already running raft network [WARNING: this clears everything]
+4) TODO: Start whisper services and attach to already running node
+5) killall geth constellation-node
+0) Quit
+prompt: option:  
+```
+
+You now have two connected nodes, running raft. If you ran this inside `screen`, you can detach with `Ctrl + a + d`.
+
+#### Joining later
+
+Now we will join node3. On node3 run:
+```
+$ node index.js 
+Trying to get public ip address, please wait a few seconds...
+Welcome! 
+
+Please enter the IP address other nodes will use to connect to this node. 
+
+Also, please enter a publicly identifyable string for this node to use.
+
+
+prompt: localIpAddress:  (192.168.0.102) 
+prompt: nodeName:  node3
+Please select an option:
+1) Raft
+2) QuorumChain
+5) Kill all geth and constellation
+prompt: option:  1
+```
+Next, we pick option 3:
+```
+Please select an option below:
+1) Start a new network as the coordinator [WARNING: this clears everything]
+2) Start a new network as a non-coordinator [WARNING: this clears everything]
+3) Join already running raft network [WARNING: this clears everything]
+4) TODO: Start whisper services and attach to already running node
+5) killall geth constellation-node
+0) Quit
+prompt: option:  3
+```
+Enter the ip address of the coordinating node:
+```
+In order to join the network, please enter the ip address of the coordinating node
+prompt: ipAddress:  192.168.0.100
+[*] Joining communication network...
+true
+[*] Communication network started
+[*] Starting new network...
+Generating node key
+
+enode: enode://14dff901c29a4af1f6e19b966093f2dfd25a6c8bec0b18001d622487de1750c605831f05ee795af10e9d0a9f846fa9a3012fe642fbfdffe25f0cab2e9bf88cda@192.168.0.102:20000?raftport=40000
+
+[*] Requesting existing network membership. This will block until the other node responds
+[*] Network membership: ACCEPTED
+[*] Requesting genesis block config. This will block until the other node is online
+received genesis config
+[*] Requesting static nodes file. This will block until the other node is online
+received static nodes file
+[*] New network started
+Please select an option below:
+1) Start a new network as the coordinator [WARNING: this clears everything]
+2) Start a new network as a non-coordinator [WARNING: this clears everything]
+3) Join already running raft network [WARNING: this clears everything]
+4) TODO: Start whisper services and attach to already running node
+5) killall geth constellation-node
+0) Quit
+prompt: option:
+```
+
+You should now have three connected nodes running raft.
 
 ### Network topology
 
