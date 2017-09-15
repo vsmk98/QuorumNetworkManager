@@ -39,6 +39,7 @@ jspm_packages
 
 # Vim swap files
 *.swp
+*.swo
 
 # Blockchain data files
 Blockchain/raft-snap*
