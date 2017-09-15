@@ -1,4 +1,4 @@
-let whisper = require('./whisperNetwork.js')
+let whisper = require('./Communication/whisperNetwork.js')
 let util = require('./util.js')
 
 let processedAccounts = []

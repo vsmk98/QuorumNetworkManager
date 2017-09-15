@@ -2,7 +2,7 @@ let async = require('async')
 let exec = require('child_process').exec
 let prompt = require('prompt')
 
-let whisper = require('./whisperNetwork.js')
+let whisper = require('./Communication/whisperNetwork.js')
 let util = require('./util.js')
 let constellation = require('./constellation.js')
 let statistics = require('./networkStatistics.js')

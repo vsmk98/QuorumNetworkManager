@@ -1,5 +1,5 @@
-const util = require('./util.js')
-var config = require('./config.js')
+const util = require('../util.js')
+var config = require('../config.js')
 
 // TODO: Add to and from fields to validate origins
 function requestExistingNetworkMembership(result, cb){
