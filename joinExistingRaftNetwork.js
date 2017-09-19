@@ -124,7 +124,7 @@ function joinRaftNetwork(config, cb){
   })
 }
 
-function handleJoiningRaftNetwork(localIpAddress, cb){
+function handleJoiningRaftNetwork(options, cb){
   config = {}
   config.localIpAddress = options.localIpAddress
   console.log('In order to join the network, '
