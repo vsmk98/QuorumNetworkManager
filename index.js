@@ -145,9 +145,11 @@ function keepExistingFiles(cb){
 
 function handleRaftConsensus(){
   console.log('Please select an option below:');
+  console.log('----- Option 1 and 2 are for the initial setup of a raft network -----')
   console.log('1) Start a node as the setup coordinator [Ideally there should only be one coordinator]')
   console.log('2) Start a node as a non-coordinator')
-  console.log('3) Join already running raft network')
+  console.log('----- Option 3 is for joining a raft network post initial setup  -----')
+  console.log('3) Join a raft network if you were not part of the initial setup')
   console.log('4) TODO: Start whisper services and attach to already running node')
   console.log('5) killall geth constellation-node');
   console.log('0) Quit');
