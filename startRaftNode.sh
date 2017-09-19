@@ -3,9 +3,9 @@ set -u
 set -e
 
 geth --datadir Blockchain init quorum-genesis.json &>> /dev/null
-sleep 5
 
 nohup constellation-node constellation.config &> constellation.log &
+
 sleep 5
 
 FLAGS="--datadir Blockchain --shh --port $2 --unlock 0 --password passwords.txt --raft"
@@ -22,6 +22,5 @@ fi
 ALL_ARGS="$FLAGS $RPC_FLAGS $RAFT_ARGS"
 
 PRIVATE_CONFIG=constellation.config nohup geth $ALL_ARGS &> gethNode.log &
-sleep 10
 
 echo "[*] Node started"
