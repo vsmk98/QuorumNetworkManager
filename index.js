@@ -126,38 +126,72 @@ function handleNetworkMembership(cb){
   })
 }
 
+function keepExistingFiles(cb){
+  console.log('Please select an option below:');
+  console.log('1) Clear all files/configuration and start from scratch[WARNING: this clears everything]')
+  console.log('2) Keep old files/configuration intact and start the node + whisper services')
+  prompt.get(['option'], function(err, result){
+    let keepFiles = false;
+    if(result.option == 1){
+      keepFiles = false
+    } else {
+      keepFiles = true
+    } 
+    cb({
+      keepExistingFiles: keepFiles
+    })
+  })
+}
+
 function handleRaftConsensus(){
   console.log('Please select an option below:');
-  console.log('1) Start a new network as the coordinator [WARNING: this clears everything]')
-  console.log('2) Start a new network as a non-coordinator [WARNING: this clears everything]')
-  console.log('3) Join already running raft network [WARNING: this clears everything]')
+  console.log('----- Option 1 and 2 are for the initial setup of a raft network -----')
+  console.log('1) Start a node as the setup coordinator [Ideally there should only be one coordinator]')
+  console.log('2) Start a node as a non-coordinator')
+  console.log('----- Option 3 is for joining a raft network post initial setup  -----')
+  console.log('3) Join a raft network if you were not part of the initial setup')
   console.log('4) TODO: Start whisper services and attach to already running node')
   console.log('5) killall geth constellation-node');
   console.log('0) Quit');
   prompt.get(['option'], function(err, result){
     if(result.option == 1){
       handleNetworkMembership(function(res){
+        keepExistingFiles(function(setup){
+          let options = {
+            localIpAddress: localIpAddress,
+            networkMembership: res.networkMembership,
+            keepExistingFiles: setup.keepExistingFiles
+          };
+          newRaftNetwork.HandleStartingNewRaftNetwork(options, function(err, networks){
+            raftNetwork = networks.raftNetwork
+            communicationNetwork = networks.communicationNetwork
+            mainLoop()
+          })
+        })
+      })
+    } else if(result.option == 2){
+      keepExistingFiles(function(setup){
         let options = {
           localIpAddress: localIpAddress,
-          networkMembership: res.networkMembership
+          keepExistingFiles: setup.keepExistingFiles
         };
-        newRaftNetwork.HandleStartingNewRaftNetwork(options, function(err, networks){
+        joinRaftNetwork.HandleJoiningRaftNetwork(options, function(err, networks){
           raftNetwork = networks.raftNetwork
           communicationNetwork = networks.communicationNetwork
           mainLoop()
         })
       })
-    } else if(result.option == 2){
-      joinRaftNetwork.HandleJoiningRaftNetwork(localIpAddress, function(err, networks){
-        raftNetwork = networks.raftNetwork
-        communicationNetwork = networks.communicationNetwork
-        mainLoop()
-      })
     } else if(result.option == 3){
-      joinExistingRaftNetwork.HandleJoiningRaftNetwork(localIpAddress, function(err, networks){
-        raftNetwork = networks.raftNetwork
-        communicationNetwork = networks.communicationNetwork
-        mainLoop()
+      keepExistingFiles(function(setup){
+        let options = {
+          localIpAddress: localIpAddress,
+          keepExistingFiles: setup.keepExistingFiles
+        };
+        joinExistingRaftNetwork.HandleJoiningRaftNetwork(options, function(err, networks){
+          raftNetwork = networks.raftNetwork
+          communicationNetwork = networks.communicationNetwork
+          mainLoop()
+        })
       })
     } else if(result.option == 4){
       console.log('This is stil on the TODO list')
