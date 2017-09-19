@@ -35,18 +35,6 @@ function startRaftNode(result, cb){
   })
 }
 
-function askForEnode(result, cb){
-  prompt.get(['enode'] , function (err, answer) {
-    if(err){console.log('ERROR:', err)}
-    if(answer.enode != 0){
-      result.enodeList.push(answer.enode)
-      askForEnode(result, cb)
-    } else {
-      cb(null, result)
-    }
-  })
-}
-
 function handleExistingFiles(result, cb){
   if(result.keepExistingFiles == false){ 
     let seqFunction = async.seq(
@@ -79,7 +67,11 @@ function handleNetworkConfiguration(result, cb){
       cb(null, res)
     })
   } else {
-    cb(null, result)
+    fs.readFile('Blockchain/raftID', function(err, data){
+      console.log('raftID:', data)
+      result.communicationNetwork.raftID = data 
+      cb(null, result)
+    })
   }
 }
 

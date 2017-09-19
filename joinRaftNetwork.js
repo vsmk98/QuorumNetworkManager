@@ -34,18 +34,6 @@ function startRaftNode(result, cb){
   })
 }
 
-function askForEnode(result, cb){
-  prompt.get(['enode'] , function (err, answer) {
-    if(err){console.log('ERROR:', err)}
-    if(answer.enode != 0){
-      result.enodeList.push(answer.enode)
-      askForEnode(result, cb)
-    } else {
-      cb(null, result)
-    }
-  })
-}
-
 function handleExistingFiles(result, cb){
   if(result.keepExistingFiles == false){ 
     let seqFunction = async.seq(

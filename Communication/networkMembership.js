@@ -1,5 +1,8 @@
+const fs = require('fs')
+
 const util = require('../util.js')
 var config = require('../config.js')
+
 
 // TODO: Add to and from fields to validate origins
 function requestExistingNetworkMembership(result, cb){
@@ -43,7 +46,12 @@ function requestExistingNetworkMembership(result, cb){
       let messageTokens = message.split('|')
       console.log('[*] Network membership:', messageTokens[2])
       result.communicationNetwork.raftID = messageTokens[3]
-      cb(null, result)
+      fs.writeFile('../Blockchain/raftID', result.communicationNetwork.raftID, function(err){ 
+        if(err) {
+          console.log('ERROR:', err);
+        }
+        cb(null, result)
+      })
     }
   })
 }
