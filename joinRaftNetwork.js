@@ -23,7 +23,6 @@ function joinRaftNetwork(config, cb){
     displayGethAccount,
     util.GenerateNodeKey,    
     util.DisplayEnode,
-    //getConfiguration, // TODO: Remove this
     constellation.CreateNewKeys, 
     constellation.CreateConfig,
     whisper.RequestNetworkMembership,
@@ -128,9 +127,9 @@ function getConfiguration(result, cb){
   })
 }
 
-function handleJoiningRaftNetwork(localIpAddress, cb){
+function handleJoiningRaftNetwork(options, cb){
   config = {}
-  config.localIpAddress = localIpAddress
+  config.localIpAddress = options.localIpAddress
   console.log('In order to join the network, '
     + 'please enter the ip address of the coordinating node')
   prompt.get(['ipAddress'], function (err, network) {
