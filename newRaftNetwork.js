@@ -117,7 +117,6 @@ function startNewRaftNetwork(config, cb){
     handleNetworkConfiguration,
     startRaftNode,
     util.CreateWeb3Connection,
-    //util.UnlockAllAccounts,
     whisper.AddEnodeResponseHandler,
     peerHandler.ListenForNewEnodes,
     whisper.AddEtherResponseHandler,
@@ -150,7 +149,6 @@ function startNewRaftNetwork(config, cb){
     "web3IPCHost": './Blockchain/geth.ipc',
     "web3RPCProvider": 'http://localhost:'+ports.gethNodeRPC
   }
-  console.log('result.keepExistingFiles:', result.keepExistingFiles)
   seqFunction(result, function(err, res){
     if (err) { return console.log('ERROR', err) }
     console.log('[*] Done')

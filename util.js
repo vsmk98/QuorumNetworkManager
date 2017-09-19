@@ -69,22 +69,19 @@ function waitForIPCPath(path, cb){
 }
 
 function waitForIPCConnection(web3IPC, cb){
-  let isAlive = false
-  web3IPC.eth.getAccounts(function(err, test){
-    if(err){console.log('ERROR:', err)}
-    if(test == undefined){
-      setTimeout(function(){
-        waitForIPCConnection(web3IPC, cb)
-      }, 1000)
-    } else {
-      isAlive = true
-      cb(isAlive)   
-    }
-  })
+  let web3IPCConnection = web3IPC.currentProvider.connection
+  if(web3IPCConnection.connecting == false){
+    cb()
+  } else {
+    setTimeout(function(){
+      waitForIPCConnection(web3IPC, cb)
+    }, 1000)
+  }
 }
 
 // TODO: add error handler here for web3 connections so that program doesn't exit on error
 function createWeb3Connection(result, cb){
+  console.log('[* Info] If you see a single message starting with \"IPC Connection Error\", you can safely ignore it')
   let host = result.web3IPCHost;
   waitForIPCPath(host, function(){
     // Web3 IPC
@@ -97,7 +94,8 @@ function createWeb3Connection(result, cb){
       debug: false
     };
     let web3IPC = Web3IPC.create(options);
-    waitForIPCConnection(web3IPC, function(isAlive){
+    let web3IPCConnection = web3IPC.currentProvider.connection
+    waitForIPCConnection(web3IPC, function(){
       console.log('[*] IPC Connection open, node started')
       result.web3IPC = web3IPC;
       // Web3 RPC
