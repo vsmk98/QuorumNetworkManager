@@ -13,62 +13,6 @@ let ports = require('./config.js').ports
 
 prompt.start()
 
-function joinRaftNetwork(config, cb){
-  console.log('[*] Starting new network...')
-
-  let seqFunction = async.seq(
-    util.ClearDirectories,
-    util.CreateDirectories,
-    util.GetNewGethAccount,
-    displayGethAccount,
-    util.GenerateNodeKey,    
-    util.DisplayEnode,
-    constellation.CreateNewKeys, 
-    constellation.CreateConfig,
-    whisper.RequestNetworkMembership,
-    whisper.GetGenesisBlockConfig,
-    whisper.GetStaticNodesFile,
-    startRaftNode,
-    util.CreateWeb3Connection,
-    util.UnlockAllAccounts,
-    whisper.AddEnodeResponseHandler,
-    peerHandler.ListenForNewEnodes,
-    whisper.AddEtherResponseHandler,
-    fundingHandler.MonitorAccountBalances,
-    statistics.Setup
-  )
-
-  let result = {
-    localIpAddress: config.localIpAddress,
-    remoteIpAddress : config.remoteIpAddress, 
-    folders: ['Blockchain', 'Blockchain/geth', 'Constellation'], 
-    constellationKeySetup: [
-      {folderName: 'Constellation', fileName: 'node'},
-      {folderName: 'Constellation', fileName: 'nodeArch'},
-    ],
-    constellationConfigSetup: { 
-      configName: 'constellation.config', 
-      folderName: 'Constellation', 
-      localIpAddress : config.localIpAddress, 
-      localPort : ports.constellation,
-      remoteIpAddress : config.remoteIpAddress, 
-      remotePort : ports.constellation,
-      publicKeyFileName: 'node.pub', 
-      privateKeyFileName: 'node.key', 
-      publicArchKeyFileName: 'nodeArch.pub', 
-      privateArchKeyFileName: 'nodeArch.key', 
-    },
-    communicationNetwork: config.communicationNetwork,
-    "web3IPCHost": './Blockchain/geth.ipc',
-    "web3RPCProvider": 'http://localhost:'+ports.gethNodeRPC
-  }
-  seqFunction(result, function(err, res){
-    if (err) { return console.log('ERROR', err) }
-    console.log('[*] New network started')
-    cb(err, res)
-  })
-}
-
 function displayGethAccount(result, cb){
   console.log('Account:', result.addressList[0])
   cb(null, result)
@@ -127,7 +71,63 @@ function getConfiguration(result, cb){
   })
 }
 
-function handleJoiningRaftNetwork(options, cb){
+function joinRaftNetwork(config, cb){
+  console.log('[*] Starting new network...')
+
+  let seqFunction = async.seq(
+    util.ClearDirectories,
+    util.CreateDirectories,
+    util.GetNewGethAccount,
+    displayGethAccount,
+    util.GenerateNodeKey,    
+    util.DisplayEnode,
+    constellation.CreateNewKeys, 
+    constellation.CreateConfig,
+    whisper.RequestNetworkMembership,
+    whisper.GetGenesisBlockConfig,
+    whisper.GetStaticNodesFile,
+    startRaftNode,
+    util.CreateWeb3Connection,
+    util.UnlockAllAccounts,
+    whisper.AddEnodeResponseHandler,
+    peerHandler.ListenForNewEnodes,
+    whisper.AddEtherResponseHandler,
+    fundingHandler.MonitorAccountBalances,
+    statistics.Setup
+  )
+
+  let result = {
+    localIpAddress: config.localIpAddress,
+    remoteIpAddress : config.remoteIpAddress, 
+    folders: ['Blockchain', 'Blockchain/geth', 'Constellation'], 
+    constellationKeySetup: [
+      {folderName: 'Constellation', fileName: 'node'},
+      {folderName: 'Constellation', fileName: 'nodeArch'},
+    ],
+    constellationConfigSetup: { 
+      configName: 'constellation.config', 
+      folderName: 'Constellation', 
+      localIpAddress : config.localIpAddress, 
+      localPort : ports.constellation,
+      remoteIpAddress : config.remoteIpAddress, 
+      remotePort : ports.constellation,
+      publicKeyFileName: 'node.pub', 
+      privateKeyFileName: 'node.key', 
+      publicArchKeyFileName: 'nodeArch.pub', 
+      privateArchKeyFileName: 'nodeArch.key', 
+    },
+    communicationNetwork: config.communicationNetwork,
+    "web3IPCHost": './Blockchain/geth.ipc',
+    "web3RPCProvider": 'http://localhost:'+ports.gethNodeRPC
+  }
+  seqFunction(result, function(err, res){
+    if (err) { return console.log('ERROR', err) }
+    console.log('[*] New network started')
+    cb(err, res)
+  })
+}
+
+function handleJoiningRaftNetwork(localIpAddress, cb){
   config = {}
   config.localIpAddress = options.localIpAddress
   console.log('In order to join the network, '
