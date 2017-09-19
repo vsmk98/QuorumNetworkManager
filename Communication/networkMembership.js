@@ -46,7 +46,7 @@ function requestExistingNetworkMembership(result, cb){
       let messageTokens = message.split('|')
       console.log('[*] Network membership:', messageTokens[2])
       result.communicationNetwork.raftID = messageTokens[3]
-      fs.writeFile('../Blockchain/raftID', result.communicationNetwork.raftID, function(err){ 
+      fs.writeFile('Blockchain/raftID', result.communicationNetwork.raftID, function(err){ 
         if(err) {
           console.log('ERROR:', err);
         }

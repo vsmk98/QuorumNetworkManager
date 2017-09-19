@@ -68,7 +68,6 @@ function handleNetworkConfiguration(result, cb){
     })
   } else {
     fs.readFile('Blockchain/raftID', function(err, data){
-      console.log('raftID:', data)
       result.communicationNetwork.raftID = data 
       cb(null, result)
     })
