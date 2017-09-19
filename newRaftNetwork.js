@@ -87,7 +87,6 @@ function handleExistingFiles(result, cb){
   }
 }
 
-
 function handleNetworkConfiguration(result, cb){
   if(result.keepExistingFiles == false){ 
     let seqFunction = async.seq(
