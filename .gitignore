@@ -48,8 +48,7 @@ Blockchain/quorum-raft-state*
 Blockchain/raft-wal*
 Blockchain/geth*
 Blockchain/keystore*
-Blockchain2/geth*
-Blockchain2/keystore*
+Blockchain/raftID
 quorum-config.json
 quorum-genesis.json
 
@@ -57,9 +56,6 @@ quorum-genesis.json
 constellation.config
 Constellation/data
 Constellation/node*
-constellation2.config
-Constellation2/data
-Constellation2/node*
 
 # CommunicationNode
 CommunicationNode/
