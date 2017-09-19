@@ -62,10 +62,8 @@ function addEtherResponseHandler(result, cb){
 // TODO: Add check whether requester has correct permissions
 // This will broadcast this node's enode to any 'request|enode' message
 function addEnodeResponseHandler(result, cb){
-  let web3RPC = result.web3RPC
   let web3IPC = result.web3IPC
   let commWeb3RPC = result.communicationNetwork.web3RPC
-  let commWeb3IPC = result.communicationNetwork.web3IPC
   commWeb3RPC.shh.filter({"topics":["Enode"]}).watch(function(err, msg) {
     if(err){console.log("ERROR:", err)}
     var message = null
@@ -145,7 +143,6 @@ function copyCommunicationNodeKey(result, cb){
 // TODO: Add check whether requester has correct permissions
 function genesisConfigHandler(result, cb){
   var web3RPC = result.web3RPC;
-  var web3IPC = result.web3IPC;
   web3RPC.shh.filter({"topics":["GenesisConfig"]}).watch(function(err, msg) {
     if(err){console.log("ERROR:", err);};
     if(result.genesisBlockConfigReady != true){
@@ -176,7 +173,6 @@ function genesisConfigHandler(result, cb){
 
 function staticNodesFileHandler(result, cb){
   var web3RPC = result.web3RPC;
-  var web3IPC = result.web3IPC;
   web3RPC.shh.filter({"topics":["StaticNodes"]}).watch(function(err, msg) {
     if(err){console.log("ERROR:", err);};
     if(result.staticNodesFileReady != true){
@@ -323,7 +319,7 @@ function startCommunicationNode(result, cb){
 }
 
 function startCommunicationNetwork(result, cb){
-  console.log('[*] Starting communication network...')
+  console.log('[*] Starting communication node...')
   let networkSetup = async.seq(
     util.ClearDirectories,
     util.CreateDirectories,
@@ -343,7 +339,6 @@ function startCommunicationNetwork(result, cb){
   }
   networkSetup(config, function(err, commNet){
     if (err) { console.log('ERROR:', err) }
-    console.log('[*] New communication network started')
     result.communicationNetwork = commNet
     cb(err, result)
   })
