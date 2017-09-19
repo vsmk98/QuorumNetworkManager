@@ -14,6 +14,7 @@ let ports = require('./config.js').ports
 prompt.start()
 
 function startRaftNode(result, cb){
+  console.log('[*] Starting raft node...')
   let options = {encoding: 'utf8', timeout: 100*1000}
   let cmd = './startRaftNode.sh'
   cmd += ' '+ports.gethNodeRPC
@@ -121,7 +122,7 @@ function startNewRaftNetwork(config, cb){
   }
   seqFunction(result, function(err, res){
     if (err) { return console.log('ERROR', err) }
-    console.log('[*] New network started')
+    console.log('[*] Done')
     cb(err, res)
   })
 }
@@ -132,7 +133,6 @@ function handleStartingNewRaftNetwork(options, cb){
   config.networkMembership = options.networkMembership
   startNewRaftNetwork(config, function(err, result){
     if (err) { return console.log('ERROR', err) }
-    console.log('[*] Network started')
     config.raftNetwork = Object.assign({}, result)
     let networks = {
       raftNetwork: config.raftNetwork,
