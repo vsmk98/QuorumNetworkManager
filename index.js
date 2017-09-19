@@ -128,19 +128,19 @@ function handleNetworkMembership(cb){
 
 function keepExistingFiles(cb){
   console.log('Please select an option below:');
-  console.log('1) Clear all files and start from scratch [WARNING: this clears everything]. '+
+  console.log('1) Clear all files and start from scratch [WARNING: this clears everything]. '
     +'The setup coordinator will distribute everything to the non-coordinators');
   console.log('2) Keep files intact and start the node + whisper services');
   prompt.get(['option'], function(err, result){
+    let keepFiles = false;
     if(result.option == 1){
-      cb({
-        keepExistingFiles: false
-      })
+      keepFiles = false
     } else {
-      cb({
-        keepExistingFiles: true
-      })
+      keepFiles = true
     } 
+    cb({
+      keepExistingFiles: keepFiles
+    })
   })
 }
 

@@ -23,4 +23,6 @@ ALL_ARGS="$FLAGS $RPC_FLAGS $RAFT_ARGS"
 
 PRIVATE_CONFIG=constellation.config nohup geth $ALL_ARGS &> gethNode.log &
 
+sleep 10
+
 echo "[*] Node started"

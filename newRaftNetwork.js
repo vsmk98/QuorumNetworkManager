@@ -70,25 +70,54 @@ function addAddresslistToQuorumConfig(result, cb){
   cb(null, result)
 }
 
+function handleExistingFiles(result, cb){
+  if(result.keepExistingFiles == false){ 
+    let seqFunction = async.seq(
+      util.ClearDirectories,
+      util.CreateDirectories,
+      util.GenerateNodeKey,    
+      util.DisplayEnode
+    )
+    seqFunction(result, function(err, res){
+      if (err) { return console.log('ERROR', err) }
+      cb(null, res)
+    })
+  } else {
+    cb(null, result)
+  }
+}
+
+
+function handleNetworkConfiguration(result, cb){
+  if(result.keepExistingFiles == false){ 
+    let seqFunction = async.seq(
+      getConfiguration,
+      util.GetNewGethAccount,
+      addAddresslistToQuorumConfig,
+      util.CreateQuorumConfig,
+      util.CreateGenesisBlockConfig,
+      constellation.CreateNewKeys, 
+      constellation.CreateConfig
+    )
+    seqFunction(result, function(err, res){
+      if (err) { return console.log('ERROR', err) }
+      cb(null, res)
+    })
+  } else {
+    cb(null, result)
+  }
+}
+
 function startNewRaftNetwork(config, cb){
-  console.log('[*] Starting new network...')
+  console.log('[*] Starting new node...')
 
   let seqFunction = async.seq(
-    util.ClearDirectories,
-    util.CreateDirectories,
-    util.GenerateNodeKey,    
-    util.DisplayEnode,
+    handleExistingFiles,
     whisper.StartCommunicationNetwork,
-    getConfiguration,
-    util.GetNewGethAccount,
-    addAddresslistToQuorumConfig,
-    util.CreateQuorumConfig,
-    util.CreateGenesisBlockConfig,
-    constellation.CreateNewKeys, 
-    constellation.CreateConfig,
+    handleNetworkConfiguration,
     startRaftNode,
     util.CreateWeb3Connection,
-    util.UnlockAllAccounts,
+    //util.UnlockAllAccounts,
     whisper.AddEnodeResponseHandler,
     peerHandler.ListenForNewEnodes,
     whisper.AddEtherResponseHandler,
@@ -100,6 +129,7 @@ function startNewRaftNetwork(config, cb){
   let result = {
     localIpAddress: config.localIpAddress,
     networkMembership: config.networkMembership,
+    keepExistingFiles: config.keepExistingFiles,
     folders: ['Blockchain', 'Blockchain/geth', 'Constellation'], 
     constellationKeySetup: [
       {folderName: 'Constellation', fileName: 'node'},
@@ -120,6 +150,7 @@ function startNewRaftNetwork(config, cb){
     "web3IPCHost": './Blockchain/geth.ipc',
     "web3RPCProvider": 'http://localhost:'+ports.gethNodeRPC
   }
+  console.log('result.keepExistingFiles:', result.keepExistingFiles)
   seqFunction(result, function(err, res){
     if (err) { return console.log('ERROR', err) }
     console.log('[*] Done')
@@ -131,6 +162,7 @@ function handleStartingNewRaftNetwork(options, cb){
   config = {}
   config.localIpAddress = options.localIpAddress
   config.networkMembership = options.networkMembership
+  config.keepExistingFiles = options.keepExistingFiles
   startNewRaftNetwork(config, function(err, result){
     if (err) { return console.log('ERROR', err) }
     config.raftNetwork = Object.assign({}, result)
