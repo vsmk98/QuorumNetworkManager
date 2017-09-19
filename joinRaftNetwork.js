@@ -100,6 +100,7 @@ function joinRaftNetwork(config, cb){
   let result = {
     localIpAddress: config.localIpAddress,
     remoteIpAddress : config.remoteIpAddress, 
+    keepExistingFiles: config.keepExistingFiles,
     folders: ['Blockchain', 'Blockchain/geth', 'Constellation'], 
     constellationKeySetup: [
       {folderName: 'Constellation', fileName: 'node'},
@@ -131,6 +132,7 @@ function joinRaftNetwork(config, cb){
 function handleJoiningRaftNetwork(options, cb){
   config = {}
   config.localIpAddress = options.localIpAddress
+  config.keepExistingFiles = options.keepExistingFiles
   console.log('In order to join the network, '
     + 'please enter the ip address of the coordinating node')
   prompt.get(['ipAddress'], function (err, network) {
