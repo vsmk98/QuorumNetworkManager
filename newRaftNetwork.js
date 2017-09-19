@@ -103,6 +103,8 @@ function handleNetworkConfiguration(result, cb){
       cb(null, res)
     })
   } else {
+    result.communicationNetwork.genesisBlockConfigReady = true
+    result.communicationNetwork.staticNodesFileReady = true
     cb(null, result)
   }
 }
