@@ -12,7 +12,7 @@ config.ports.devp2p = 30303
 config.ports.constellation = 9000
 
 config.identity = {}
-config.identity.nodeName = null
+config.identity.nodeName = 'unset'
 config.identity.whisperId = null
 
 // Change these for different setups. 
