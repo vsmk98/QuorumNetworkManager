@@ -10,6 +10,7 @@ let statistics = require('./networkStatistics.js')
 let peerHandler = require('./peerHandler.js')
 let fundingHandler = require('./fundingHandler.js')
 let ports = require('./config.js').ports
+let setup = require('./config.js').setup
 
 prompt.start()
 
