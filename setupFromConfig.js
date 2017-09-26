@@ -1,5 +1,6 @@
 let config = require('./config.js')
 let newRaftNetwork = require('./newRaftNetwork.js')
+let joinExisting = require('./joinExistingRaftNetwork.js')
 
 function setup(){
   console.log('[SetupFromConfig] Starting setup from config')
@@ -13,7 +14,11 @@ function setup(){
     } else if (config.setup.role === 'non-coordinator'){
       console.log('TODO: non-coordinator')
     } else if (config.setup.role === 'dynamicPeer'){
-      console.log('TODO: dynamicPeer')
+      config.setup.automatedSetup = true
+      joinExisting.HandleJoiningRaftNetwork(config.setup, function(err, result){
+        if(err){console.log('ERROR:', err)} 
+        console.log('[SetupFromConfig] All done. Leave this running, ideally inside screen')
+      })
     } else {
       console.log('Unsupported option:', config.setup.role)
     }    

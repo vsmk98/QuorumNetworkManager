@@ -33,7 +33,7 @@ config.setup.enodeList = []
 // Accounts that will be written to the genesis config if coordinator, comma separated strings
 config.setup.addressList = []
 // Address of the coordinator, used if this node is not the coordinator
-config.setup.remoteIpAddress = null
+config.setup.remoteIpAddress = '127.0.0.1'
 // This is changed to true if setupFromConfig.js is used
 config.setup.automatedSetup = false
 
