@@ -127,21 +127,7 @@ function handleNetworkConfiguration(result, cb){
 function startNewRaftNetwork(config, cb){
   console.log('[*] Starting new node...')
 
-  let seqFunction = async.seq(
-    handleExistingFiles,
-    whisper.StartCommunicationNetwork,
-    handleNetworkConfiguration,
-    startRaftNode,
-    util.CreateWeb3Connection,
-    whisper.AddEnodeResponseHandler,
-    peerHandler.ListenForNewEnodes,
-    whisper.AddEtherResponseHandler,
-    fundingHandler.MonitorAccountBalances,
-    statistics.Setup,
-    whisper.ExistingRaftNetworkMembership
-  )
-
-  let result = {
+  let nodeConfig = {
     localIpAddress: config.localIpAddress,
     networkMembership: config.networkMembership,
     keepExistingFiles: config.keepExistingFiles,
@@ -166,7 +152,21 @@ function startNewRaftNetwork(config, cb){
     "web3RPCProvider": 'http://localhost:'+ports.gethNodeRPC
   }
 
-  seqFunction(result, function(err, res){
+  let seqFunction = async.seq(
+    handleExistingFiles,
+    whisper.StartCommunicationNetwork,
+    handleNetworkConfiguration,
+    startRaftNode,
+    util.CreateWeb3Connection,
+    whisper.AddEnodeResponseHandler,
+    peerHandler.ListenForNewEnodes,
+    whisper.AddEtherResponseHandler,
+    fundingHandler.MonitorAccountBalances,
+    statistics.Setup,
+    whisper.ExistingRaftNetworkMembership
+  )
+
+  seqFunction(nodeConfig, function(err, res){
     if (err) { return console.log('ERROR', err) }
     console.log('[*] Done')
     cb(err, res)

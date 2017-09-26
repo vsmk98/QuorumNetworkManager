@@ -75,18 +75,7 @@ function handleNetworkConfiguration(result, cb){
 function joinRaftNetwork(config, cb){
   console.log('[*] Starting new node...')
 
-  let seqFunction = async.seq(
-    handleExistingFiles,
-    handleNetworkConfiguration,
-    startRaftNode,
-    util.CreateWeb3Connection,
-    whisper.AddEnodeResponseHandler,
-    peerHandler.ListenForNewEnodes,
-    fundingHandler.MonitorAccountBalances,
-    statistics.Setup
-  )
-
-  let result = {
+  let nodeConfig = {
     localIpAddress: config.localIpAddress,
     remoteIpAddress : config.remoteIpAddress, 
     keepExistingFiles: config.keepExistingFiles,
@@ -111,7 +100,19 @@ function joinRaftNetwork(config, cb){
     "web3IPCHost": './Blockchain/geth.ipc',
     "web3RPCProvider": 'http://localhost:'+ports.gethNodeRPC
   }
-  seqFunction(result, function(err, res){
+
+  let seqFunction = async.seq(
+    handleExistingFiles,
+    handleNetworkConfiguration,
+    startRaftNode,
+    util.CreateWeb3Connection,
+    whisper.AddEnodeResponseHandler,
+    peerHandler.ListenForNewEnodes,
+    fundingHandler.MonitorAccountBalances,
+    statistics.Setup
+  )
+
+  seqFunction(nodeConfig, function(err, res){
     if (err) { return console.log('ERROR', err) }
     console.log('[*] New node started')
     cb(err, res)
