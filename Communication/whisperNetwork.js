@@ -210,15 +210,15 @@ function getGenesisBlockConfig(result, cb){
 
   console.log('[*] Requesting genesis block config. This will block until the other node is online')
 
-  var shh = result.communicationNetwork.web3RPC.shh;
+  let shh = result.communicationNetwork.web3RPC.shh;
   
-  var id = shh.newIdentity();
-  var str = "request|genesisConfig";
-  var hexString = new Buffer(str).toString('hex');
+  let id = shh.newIdentity();
+  let str = "request|genesisConfig";
+  let hexString = new Buffer(str).toString('hex');
 
-  var receivedGenesisConfig = false
+  let receivedGenesisConfig = false
 
-  var intervalID = setInterval(function(){
+  let intervalID = setInterval(function(){
     if(receivedGenesisConfig){
       clearInterval(intervalID)
     } else {
@@ -234,9 +234,9 @@ function getGenesisBlockConfig(result, cb){
     }
   }, 5000)
 
-  var filter = shh.filter({"topics":["GenesisConfig"]}).watch(function(err, msg) {
+  let filter = shh.filter({"topics":["GenesisConfig"]}).watch(function(err, msg) {
     if(err){console.log("ERROR:", err)}
-    var message = null
+    let message = null
     if(msg && msg.payload){
       message = util.Hex2a(msg.payload)
     }
@@ -245,7 +245,7 @@ function getGenesisBlockConfig(result, cb){
       if(receivedGenesisConfig == false){
         receivedGenesisConfig = true
         filter.stopWatching()
-        var genesisConfig = message.replace('response|genesisConfig', '').substring(1)
+        let genesisConfig = message.replace('response|genesisConfig', '').substring(1)
         genesisConfig = genesisConfig.replace(/\\n/g, '')
         genesisConfig = genesisConfig.replace(/\\/g, '')
         fs.writeFile('quorum-genesis.json', genesisConfig, function(err, res){
