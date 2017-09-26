@@ -4,6 +4,7 @@ var config = {}
 
 config.ports = {}
 config.ports.communicationNode = 50000
+config.ports.remoteCommunicationNode = 50000
 config.ports.communicationNodeRPC = 50010
 config.ports.gethNode = 20000 // Changing this will change the raftHttp port!
 config.ports.gethNodeRPC = 20010
