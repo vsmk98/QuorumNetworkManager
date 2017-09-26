@@ -376,8 +376,9 @@ function joinCommunicationNetwork(config, cb){
   };
   seqFunction(result, function(err, commNet){
     if (err) { console.log('ERROR:', err) }
-    console.log('[*] Communication network started');
-    cb(err, commNet); 
+    config.communicationNetwork = commNet
+    console.log('[*] Communication network joined');
+    cb(err, config); 
   });
 }
 

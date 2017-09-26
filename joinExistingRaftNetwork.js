@@ -99,13 +99,13 @@ function joinRaftNetwork(config, cb){
       publicArchKeyFileName: 'nodeArch.pub', 
       privateArchKeyFileName: 'nodeArch.key', 
     },
-    communicationNetwork: config.communicationNetwork,
     "web3IPCHost": './Blockchain/geth.ipc',
     "web3RPCProvider": 'http://localhost:'+ports.gethNodeRPC
   }
 
   let seqFunction = async.seq(
     handleExistingFiles,
+    whisper.JoinCommunicationNetwork,
     handleNetworkConfiguration,
     startRaftNode,
     util.CreateWeb3Connection,
@@ -121,43 +121,32 @@ function joinRaftNetwork(config, cb){
   })
 }
 
+function getRemoteIpAddress(cb){
+  if(setup.automatedSetup === true){
+    cb(setup.remoteIpAddress)
+  } else {
+    console.log('In order to join the network, please enter the ip address of the coordinating node')
+    prompt.get(['ipAddress'], function (err, network) {
+      cb(network.ipAddress)
+    })
+  } 
+}
+
 function handleJoiningRaftNetwork(options, cb){
   config = {}
   config.localIpAddress = options.localIpAddress
   config.keepExistingFiles = options.keepExistingFiles
-  if(setup.automatedSetup === true){
-    config.remoteIpAddress = setup.remoteIpAddress
-    whisper.JoinCommunicationNetwork(config, function(err, result){
-      if (err) { return console(err) }
-      config.communicationNetwork = Object.assign({}, result)
-      joinRaftNetwork(config, function(err, result){
-        if (err) { return console.log('ERROR', err) }
-        let networks = {
-          raftNetwork: Object.assign({}, result),
-          communicationNetwork: config.communicationNetwork
-        }
-        cb(err, networks)
-      })
+  getRemoteIpAddress(function(remoteIpAddress){
+    config.remoteIpAddress = remoteIpAddress
+    joinRaftNetwork(config, function(err, result){
+      if (err) { return console.log('ERROR', err) }
+      let networks = {
+        raftNetwork: Object.assign({}, result),
+        communicationNetwork: config.communicationNetwork
+      }
+      cb(err, networks)
     })
-  } else {
-    console.log('In order to join the network, '
-      + 'please enter the ip address of the coordinating node')
-    prompt.get(['ipAddress'], function (err, network) {
-      config.remoteIpAddress = network.ipAddress
-      whisper.JoinCommunicationNetwork(config, function(err, result){
-        if (err) { return console(err) }
-        config.communicationNetwork = Object.assign({}, result)
-        joinRaftNetwork(config, function(err, result){
-          if (err) { return console.log('ERROR', err) }
-          let networks = {
-            raftNetwork: Object.assign({}, result),
-            communicationNetwork: config.communicationNetwork
-          }
-          cb(err, networks)
-        })
-      })
-    })
-  }
+  })
 }
 
 exports.HandleJoiningRaftNetwork = handleJoiningRaftNetwork
