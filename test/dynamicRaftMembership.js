@@ -1,7 +1,8 @@
 const fs = require('fs-extra')
 const expect = require('chai').expect
 
-const util = require('../util.js')
+let util = require('../util.js')
+
 let parentPath = null
 
 const node1Path = 'test/node1'
