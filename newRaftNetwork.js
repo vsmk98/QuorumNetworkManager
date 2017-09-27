@@ -73,14 +73,15 @@ function getConfiguration(result, cb){
 function addAddresslistToQuorumConfig(result, cb){
   result.blockMakers = result.addressList
   result.blockVoters = result.addressList
-  if(setup.automatedSetup && setup.automatedSetup.addressList){
-    result.blockMakers = result.blockMakers.concat(setup.automatedSetup.addressList) 
-    result.blockVoters = result.blockVoters.concat(setup.automatedSetup.addressList) 
+  if(setup.addressList && setup.addressList.length > 0){
+    result.blockMakers = result.blockMakers.concat(setup.addressList) 
+    result.blockVoters = result.blockVoters.concat(setup.addressList) 
   } 
   if(result.communicationNetwork && result.communicationNetwork.addressList){
     result.blockMakers = result.blockMakers.concat(result.communicationNetwork.addressList) 
     result.blockVoters = result.blockVoters.concat(result.communicationNetwork.addressList) 
   }
+  console.log('Adding the following addresses to the genesis block:', result.blockMakers) 
   result.threshold = 1 
   cb(null, result)
 }
