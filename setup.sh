@@ -2,6 +2,8 @@
 
 sudo apt-get update;
 sudo apt-get install -y build-essential libssl-dev git curl
+# zkp
+sudo apt-get install -y build-essential unzip libdb-dev libsodium-dev zlib1g-dev libtinfo-dev solc sysvbanner wrk libboost-all-dev libssl-dev git libgmp3-dev libprocps4-dev libgtest-dev python-markdown
 
 curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 sudo apt-get install -y nodejs
